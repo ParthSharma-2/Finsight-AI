@@ -8,7 +8,6 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
 load_dotenv()
 
 CHROMA_PATH = "data/processed/chroma_db"

@@ -5,9 +5,8 @@ from dotenv import load_dotenv
 from langchain_ollama import OllamaLLM
 from src.rag.retriever import retrieve_documents, format_context
 
-load_dotenv()
-os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
 
+load_dotenv()
 def get_llm():
     return OllamaLLM(
         model="phi",

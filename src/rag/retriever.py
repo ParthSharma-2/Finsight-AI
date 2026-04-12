@@ -7,12 +7,10 @@ from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 
 load_dotenv()
-os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
-
 CHROMA_PATH = "data/processed/chroma_db"
 
 EMBEDDING_MODEL = HuggingFaceEmbeddings(
-    model_name="all-MiniLM-L6-v2",
+    model_name="BAAI/bge-small-en-v1.5",
     model_kwargs={"device": "cpu"}
 )
 
@@ -29,6 +27,7 @@ def retrieve_documents(query: str, k: int = 5) -> list[Document]:
         search_type="similarity",
         search_kwargs={"k": k}
     )
+    query = f"Represent this sentence for searching relevant passages: {query}"
     docs = retriever.invoke(query)
     return docs
 
