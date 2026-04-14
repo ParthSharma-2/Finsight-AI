@@ -30,9 +30,45 @@ It enables users to ask complex financial questions and receive **context-aware,
 
 ---
 
-## 🏗 System Architecture
+# 🧠 FinSight AI Architecture
 
-<img width="745" height="1107" alt="image" src="https://github.com/user-attachments/assets/e6713ffb-9f7c-4825-80ee-fccad34b6242" />
+## 📄 Data Ingestion Pipeline
+PDF Documents  
+→ Chunking  
+→ Embeddings (BAAI/bge-small-en-v1.5)  
+→ ChromaDB (Vector Store)
+
+---
+
+## 🔍 Query Processing Pipeline
+
+User Query  
+↓  
+LangGraph Agent  
+├── 📚 RAG Tool → Retrieves Context from ChromaDB  
+├── 📈 Market Tool → Fetches Live Prices  
+├── 🗄️ SQL Tool → Queries Financial Database  
+└── 📰 News Tool → Fetches Latest Headlines  
+↓  
+🧠 LLM (phi via Ollama)  
+↓  
+💬 Final Answer
+
+---
+
+## ⚙️ Full Flow (Compact View)
+
+PDF → Chunk → Embed → Store (ChromaDB)  
+↓  
+User Query  
+↓  
+Agent (LangGraph)  
+↓  
+[ RAG | Market | SQL | News ]  
+↓  
+LLM (Ollama - phi)  
+↓  
+Answer
 
 
 ---
