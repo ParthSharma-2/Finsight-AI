@@ -64,7 +64,7 @@ with st.sidebar:
     )
     st.divider()
     st.caption("Powered by Ollama (phi) + LangChain + ChromaDB")
-    st.caption("Embeddings: all-MiniLM-L6-v2 (local)")
+    st.caption("Embeddings: BAAI/bge-small-en-v1.5 (local)")
     st.caption("LLM: phi (local, no API costs)")
 
 if mode == "Document Q&A":
