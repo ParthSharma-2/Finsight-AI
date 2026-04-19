@@ -98,19 +98,21 @@ def init_database():
 
 @tool
 def query_financial_database(sql_query: str) -> str:
-    """Execute a SQL query on the financial database.
-    Tables available:
-    - company_financials(company, year, revenue, net_income, eps, operating_margin)
-    - segment_revenue(company, year, segment, revenue, growth_pct)
-    - geography_revenue(company, year, region, revenue)
-    All revenue values are in INR crore.
-    Example: SELECT company, revenue FROM company_financials WHERE year=2024"""
     try:
         if not Path(DB_PATH).exists():
             init_database()
 
+        sql_lower = sql_query.strip().lower()
+
+        if not sql_lower.startswith("select"):
+            return "Only SELECT queries are allowed."
+
+        if ";" in sql_query:
+            return "Multiple queries are not allowed."
+
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
+
         cursor.execute(sql_query)
         results = cursor.fetchall()
         columns = [desc[0] for desc in cursor.description]
