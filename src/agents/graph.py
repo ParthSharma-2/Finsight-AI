@@ -2,92 +2,75 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath("."))
 
-from typing import TypedDict, Annotated
 from dotenv import load_dotenv
 from langchain_ollama import OllamaLLM
-from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
-from langgraph.graph import StateGraph, END
+from langchain_core.messages import HumanMessage
+from langgraph.graph import StateGraph, END, MessagesState
 from langgraph.prebuilt import ToolNode
-from src.agents.tools import ALL_TOOLS
+
+from src.tools import ALL_FINANCIAL_TOOLS as ALL_TOOLS
+from src.agents.memory import get_recent_context
 
 load_dotenv()
 
-class AgentState(TypedDict):
-    messages: Annotated[list[BaseMessage], "The conversation messages"]
-    question: str
-    final_answer: str
 
 def create_agent():
     llm = OllamaLLM(model="phi", temperature=0.1)
-    llm_with_tools = llm.bind_tools(ALL_TOOLS)
-    return llm_with_tools
+    return llm.bind_tools(ALL_TOOLS)
 
-def agent_node(state: AgentState) -> AgentState:
-    llm = OllamaLLM(model="phi", temperature=0.1)
-    
-    question = state["question"]
-    messages = state["messages"]
-    
-    system_prompt = """You are FinSight, an expert financial analyst AI.
-You have access to these tools:
-1. search_financial_document — search the Infosys Annual Report
-2. get_stock_price — get live stock prices  
-3. calculate_financial_metric — do financial calculations
-4. get_company_summary — get company overview
 
-Always use search_financial_document first for questions about the annual report.
-Use get_stock_price for current market data.
-Be specific, cite page numbers, and show calculations."""
+def should_use_tools(state):
+    """Check if the last message contains tool calls safely"""
+    last_message = state["messages"][-1]
+    return hasattr(last_message, "tool_calls") and last_message.tool_calls
 
-    full_prompt = f"{system_prompt}\n\nQuestion: {question}"
-    response = llm.invoke(full_prompt)
-    
-    new_messages = messages + [
-        HumanMessage(content=question),
-        AIMessage(content=response)
-    ]
-    
-    return {
-        "messages": new_messages,
-        "question": question,
-        "final_answer": response
-    }
 
 def build_graph():
-    workflow = StateGraph(AgentState)
-    workflow.add_node("agent", agent_node)
+    llm = create_agent()
+    tool_node = ToolNode(ALL_TOOLS)
+
+    workflow = StateGraph(MessagesState)
+
+    workflow.add_node("agent", llm)
+    workflow.add_node("tools", tool_node)
+
     workflow.set_entry_point("agent")
-    workflow.add_edge("agent", END)
-    graph = workflow.compile()
-    return graph
+
+    workflow.add_conditional_edges(
+        "agent",
+        lambda state: "tools" if should_use_tools(state) else END,
+    )
+
+    workflow.add_edge("tools", "agent")
+
+    return workflow.compile()
+
 
 def run_agent(question: str) -> dict:
     graph = build_graph()
-    
-    initial_state = {
-        "messages": [],
-        "question": question,
-        "final_answer": ""
-    }
-    
-    print(f"Running FinSight agent for: {question}")
-    result = graph.invoke(initial_state)
-    
+
+    context = get_recent_context(5)
+
+    result = graph.invoke({
+        "messages": [
+            HumanMessage(content=f"""
+You are FinSight, an expert financial AI.
+
+You can use tools:
+- Use document search for annual report questions
+- Use stock tools for market data
+- Use SQL tools for structured queries
+
+Previous conversation:
+{context}
+
+Question: {question}
+""")
+        ]
+    })
+
     return {
         "question": question,
-        "answer": result["final_answer"],
+        "answer": result["messages"][-1].content,
         "messages": result["messages"]
     }
-
-if __name__ == "__main__":
-    questions = [
-        "What was Infosys revenue growth from 2023 to 2024?",
-        "What is the current stock price of Infosys?",
-        "What are the main risks mentioned in the Infosys annual report?"
-    ]
-    
-    for q in questions:
-        print(f"\n{'='*60}")
-        result = run_agent(q)
-        print(f"Q: {result['question']}")
-        print(f"A: {result['answer']}")
