@@ -16,23 +16,27 @@ def get_llm():
 def answer_question(question: str, k: int = 5) -> dict:
     print(f"Retrieving relevant context for: {question}")
     docs = retrieve_documents(question, k=k)
+    docs = docs[:5]  # hard cap
     context = format_context(docs)
     print("\n--- CONTEXT ---\n", context[:1000])
 
-    prompt = f"""You are FinSight, an expert financial analyst.
+    prompt = f"""
+You are a senior equity research analyst.
 
-STRICT RULES:
-- Answer ONLY from the given context
-- If not found, say: "Not available in document"
-- Be precise and numeric where possible
-- Always mention page number
+Rules:
+- Use ONLY provided context
+- Extract exact numbers
+- Mention page numbers
+- Show calculations if applicable
+- If missing → say "Not available in document"
 
 Context:
 {context}
 
 Question: {question}
 
-Answer:"""
+Answer:
+"""
 
     llm = get_llm()
     answer = llm.invoke(prompt)
