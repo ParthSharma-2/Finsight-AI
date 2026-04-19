@@ -27,7 +27,7 @@ def retrieve_documents(query: str, k: int = 5) -> list[Document]:
         search_type="similarity",
         search_kwargs={"k": k}
     )
-    query = f"Represent this sentence for searching relevant passages: {query}"
+    query = query.strip()
     docs = retriever.invoke(query)
     return docs
 
