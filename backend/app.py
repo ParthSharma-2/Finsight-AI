@@ -1,9 +1,17 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from src.agents.graph import run_agent
 
+# =========================================
+# FastAPI App Initialization
+# =========================================
 
 app = FastAPI()
+
+# =========================================
+# CORS Configuration
+# =========================================
 
 origins = [
     "http://localhost:8080",
@@ -11,17 +19,30 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# =========================================
+# Request Schema
+# =========================================
+
+class ChatRequest(BaseModel):
+    query: str
+
+# =========================================
+# Root Endpoint
+# =========================================
 
 @app.get("/")
 def home():
     return {
         "message": "FinSight AI Backend Running"
     }
+
+# =========================================
+# Test Endpoint
+# =========================================
 
 @app.get("/test")
 def test():
@@ -30,19 +51,23 @@ def test():
         "message": "Frontend connected successfully"
     }
 
-
-
-class ChatRequest(BaseModel):
-    query: str
-
+# =========================================
+# Chat Endpoint
+# =========================================
 
 @app.post("/chat")
-def chat(request: ChatRequest):
+async def chat(request: ChatRequest):
 
-    user_query = request.query
+    try:
 
-    response = f"AI Response to: {user_query}"
+        result = run_agent(request.query)
 
-    return {
-        "response": response
-    }
+        return {
+            "response": result["answer"]
+        }
+
+    except Exception as e:
+
+        return {
+            "response": f"Error: {str(e)}"
+        }
