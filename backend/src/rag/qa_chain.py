@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, os.path.abspath("."))
 
 from dotenv import load_dotenv
-from langchain_aws import ChatBedrockConverse
+from langchain_groq import ChatGroq
 
 from src.rag.retriever import (
     retrieve_documents,
@@ -16,10 +16,10 @@ load_dotenv()
 
 def get_llm():
 
-    return ChatBedrockConverse(
-        model="anthropic.claude-3-sonnet-20240229-v1:0",
-        region_name="ap-south-1",
-        temperature=0.1
+    return ChatGroq(
+        model="llama-3.3-70b-versatile",
+        temperature=0.1,
+        groq_api_key=os.getenv("GROQ_API_KEY")
     )
 
 
@@ -36,14 +36,15 @@ def answer_question(question: str, k: int = 5) -> dict:
     print("\n--- CONTEXT ---\n", context[:1000])
 
     prompt = f"""
-You are a senior equity research analyst.
+You are FinSight AI, a senior equity research analyst.
 
-Rules:
-- Use ONLY provided context
-- Extract exact numbers
-- Mention page numbers
-- Show calculations if applicable
-- If missing → say "Not available in document"
+Instructions:
+- Use ONLY the provided context.
+- Extract exact numbers whenever available.
+- Mention evidence from the document.
+- Be concise and professional.
+- If information is unavailable, clearly say:
+  "Not available in the provided document."
 
 Context:
 {context}
@@ -58,12 +59,12 @@ Answer:
 
     response = llm.invoke(prompt)
 
-    return {
+    return {{
         "question": question,
         "answer": response.content,
         "source_documents": docs,
         "num_sources": len(docs)
-    }
+    }}
 
 
 if __name__ == "__main__":
@@ -76,12 +77,10 @@ if __name__ == "__main__":
 
     for q in questions:
 
-        print(f"\n{'='*60}")
+        print(f"\n{{'='*60}}")
 
         result = answer_question(q)
 
-        print(f"Q: {result['question']}")
-
-        print(f"A: {result['answer']}")
-
-        print(f"Sources used: {result['num_sources']} chunks")
+        print(f"Q: {{result['question']}}")
+        print(f"A: {{result['answer']}}")
+        print(f"Sources used: {{result['num_sources']}} chunks")
