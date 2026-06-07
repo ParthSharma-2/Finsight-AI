@@ -105,10 +105,39 @@ def init_database():
 @tool
 def query_financial_database(sql_query: str) -> str:
     """
-    Execute a read-only SQL query on the financial database.
+    Execute SQL on the financial database.
 
-    Only SELECT queries are allowed.
-    Returns formatted query results as text.
+    Available tables:
+
+    company_financials
+    (
+    company,
+    year,
+    revenue,
+    net_income,
+    eps,
+    operating_margin
+    )
+
+    segment_revenue
+    (
+    company,
+    year,
+    segment,
+    revenue,
+    growth_pct
+    )
+
+    geography_revenue
+    (
+    company,
+    year,
+    region,
+    revenue
+    )
+
+    Only SELECT statements are allowed.
+    Use exact table names listed above.
     """
 
     try:
