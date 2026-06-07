@@ -81,13 +81,14 @@ def build_graph():
     return workflow.compile()
 
 
-def run_agent(question: str) -> dict:
+GRAPH = build_graph()
 
-    graph = build_graph()
+
+def run_agent(question: str) -> dict:
 
     context = get_recent_context(5)
 
-    result = graph.invoke({
+    result = GRAPH.invoke({
         "messages": [
             HumanMessage(
                 content=f"""
