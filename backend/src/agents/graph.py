@@ -86,6 +86,22 @@ GRAPH = build_graph()
 
 def run_agent(question: str) -> dict:
 
+    small_talk = {
+        "hi",
+        "hello",
+        "hey",
+        "thanks",
+        "thank you",
+        "good morning",
+        "good evening"
+    }
+
+    if question.lower().strip() in small_talk:
+        return {
+            "question": question,
+            "answer": "Hello! I'm FinSight AI. How can I help with stocks, markets, financial reports, or company research?"
+        }
+
     context = get_recent_context(5)
 
     result = GRAPH.invoke({
