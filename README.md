@@ -1,282 +1,211 @@
-# 🚀 FinSight AI  
-### Agentic Financial Intelligence System (RAG + Multi-Agent + Live Data)
+# FinSight AI 🧠📈
 
-> **Built for next-gen finance + AI roles (Quant / Data / AI Engineering)**
+> **A multi-agent financial intelligence platform powered by LangGraph, Groq LLM, and RAG — deployed on AWS EC2.**
 
----
-
-## 🧠 Overview
-
-**FinSight AI** is an **agentic financial intelligence system** that combines:
-
-- Retrieval-Augmented Generation (RAG)
-- Multi-agent orchestration
-- Real-time market data
-- Financial database querying
-
-It enables users to ask complex financial questions and receive **context-aware, data-driven answers** — all powered by a **fully local AI stack (zero API cost)**.
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-Vite-61DAFB?style=flat-square&logo=react)](https://vitejs.dev/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-multi--agent-FF6B35?style=flat-square)](https://github.com/langchain-ai/langgraph)
+[![Groq](https://img.shields.io/badge/Groq-llama3--70b-F55036?style=flat-square)](https://groq.com/)
+[![AWS EC2](https://img.shields.io/badge/AWS-EC2%20t3.micro-FF9900?style=flat-square&logo=amazonaws)](https://aws.amazon.com/ec2/)
+[![ChromaDB](https://img.shields.io/badge/ChromaDB-RAG-8B5CF6?style=flat-square)](https://www.trychroma.com/)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 
 ---
 
-## ⚡ Key Highlights
+## What is FinSight AI?
 
-- 🧩 **Multi-Agent System (LangGraph)** → intelligent tool selection  
-- 📊 **Live Market Data Integration** → real-time financial insights  
-- 📚 **RAG Pipeline (ChromaDB)** → document-grounded responses  
-- 🧠 **Local LLM (Ollama - phi)** → no dependency on paid APIs  
-- 💬 **Conversational Memory** → retains user context  
-- 🏗 **Production Ready Backend** → FastAPI  
-- 🎯 **Evaluation Framework** → RAGAS metrics  
+FinSight AI is a conversational financial research assistant that combines the reasoning power of large language models with real-time market data and document-level retrieval. Ask it about stock prices, compare companies, or query your own financial research documents — all through a single chat interface.
+
+The system uses a **LangGraph multi-agent orchestration layer** to route user queries to the right tool automatically: live stock data via yFinance, vector search over uploaded PDFs via ChromaDB, or direct LLM reasoning via the Groq API.
 
 ---
 
-# 🧠 FinSight AI Architecture
+## Architecture
 
-## 📄 Data Ingestion Pipeline
-PDF Documents  
-→ Chunking  
-→ Embeddings (BAAI/bge-small-en-v1.5)  
-→ ChromaDB (Vector Store)
-
----
-
-## 🔍 Query Processing Pipeline
-
-User Query  
-↓  
-LangGraph Agent  
-├── 📚 RAG Tool → Retrieves Context from ChromaDB  
-├── 📈 Market Tool → Fetches Live Prices  
-├── 🗄️ SQL Tool → Queries Financial Database  
-└── 📰 News Tool → Fetches Latest Headlines  
-↓  
-🧠 LLM (phi via Ollama)  
-↓  
-💬 Final Answer
-
----
-
-## ⚙️ Full Flow (Compact View)
-
-PDF → Chunk → Embed → Store (ChromaDB)  
-↓  
-User Query  
-↓  
-Agent (LangGraph)  
-↓  
-[ RAG | Market | SQL | News ]  
-↓  
-LLM (Ollama - phi)  
-↓  
-Answer
-
-
----
-
-## Project Structure
-
-finsight-ai/
-
-├── src/
-
-│   ├── rag/
-
-│   │   ├── ingestion.py        # PDF loading, chunking, embedding, ChromaDB
-
-│   │   ├── retriever.py        # Semantic search and context formatting
-
-│   │   └── qa_chain.py         # RAG chain with Ollama phi
-
-│   ├── agents/
-
-│   │   ├── graph.py            # LangGraph agent with StateGraph
-
-│   │   ├── tools.py            # Agent tool definitions
-
-│   │   └── memory.py           # Persistent conversation memory
-
-│   ├── tools/
-
-│   │   ├── market.py           # Live stock prices via yfinance
-
-│   │   ├── news.py             # Company news and analyst recommendations
-
-│   │   ├── sql_tool.py         # SQLite financial database + queries
-
-│   │   └── calculator.py       # Financial ratio and growth calculations
-
-│   └── api/
-
-│       └── main.py             # FastAPI REST API
-
-├── data/
-
-│   ├── raw/                    # Source PDF documents
-
-│   └── processed/
-
-│       ├── chroma_db/          # ChromaDB vector store
-
-│       └── finsight.db         # SQLite financial database
-
-├── evals/                      # RAGAS evaluation harness
-
-├── notebooks/                  # Experimentation notebooks
-
-├── app.py                      # Streamlit UI entry point
-
-├── requirements.txt
-
-└── README.md
-
----
-
-## Quick Start
-
-### Prerequisites
-
-- Python 3.11+
-- [Ollama](https://ollama.ai) installed
-
-### Installation
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/ParthSharma-2/finsight-ai.git
-cd finsight-ai
-
-# 2. Create virtual environment
-python -m venv venv
-venv\Scripts\activate      # Windows
-source venv/bin/activate   # Mac/Linux
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Pull the LLM
-ollama pull phi
-
-# 5. Ingest a financial document
-python src/rag/ingestion.py data/raw/your_report.pdf
+```
+Browser (User)
+    ↓
+React + Vite Frontend        ← api.js handles all HTTP calls
+    ↓  POST /chat, GET /market/*, POST /research/*
+FastAPI Backend (main.py)    ← Receives, validates, dispatches
+    ↓
+LangGraph Agent (graph.py)   ← Routes to correct tool based on intent
+    ├── Groq LLM             ← llama3-70b-8192 reasoning
+    ├── yFinance Tools       ← Live price, history, stock comparison
+    ├── ChromaDB RAG         ← PDF document retrieval + vector search
+    └── SQL / Data Tools     ← Structured query over datasets
+    ↓
+JSON Response → Frontend renders chat reply, stock cards, charts
 ```
 
-### Environment Setup
-
-Create a `.env` file in the root directory:
-
-```env
-# Optional — only needed if using cloud APIs
-GOOGLE_API_KEY=your_key_here
-TAVILY_API_KEY=your_key_here
-```
+Deployed on **AWS EC2 (Ubuntu 24.04 LTS, t3.micro, ap-south-1)** with Nginx as the reverse proxy and Let's Encrypt for SSL.
 
 ---
 
-## Usage
+## Features
 
-### Run the Full System
-
-```bash
-# Terminal 1 — Start Ollama
-ollama serve
-
-# Terminal 2 — Launch Streamlit UI
-streamlit run app.py
-
-# Terminal 3 — Launch FastAPI (optional)
-uvicorn src.api.main:app --reload
-```
-
-Open `http://localhost:8501` in your browser.
-
-### API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/` | System info and available endpoints |
-| `GET` | `/health` | Health check |
-| `POST` | `/rag/ask` | Ask a question against the document |
-| `POST` | `/agent/run` | Run the full multi-agent pipeline |
-| `POST` | `/market/stock` | Get live stock price |
-| `POST` | `/db/query` | Execute SQL on financial database |
-| `GET` | `/memory/recent` | Retrieve conversation history |
-
-**Example API call:**
-
-```bash
-curl -X POST "http://localhost:8000/rag/ask" \
-     -H "Content-Type: application/json" \
-     -d '{"question": "What was Infosys revenue in 2024?", "k": 5}'
-```
-
-### RAG Pipeline Only
-
-```python
-from src.rag.qa_chain import answer_question
-
-result = answer_question("What was Infosys revenue in FY2024?")
-print(result["answer"])
-print(f"Sources: {result['num_sources']} chunks cited")
-```
-
-### Agent Pipeline
-
-```python
-from src.agents.graph import run_agent
-
-result = run_agent("Compare Infosys 2024 revenue with current stock price")
-print(result["answer"])
-```
+| Feature | Description | Status |
+|---|---|---|
+| **Multi-agent orchestration** | LangGraph routes queries to the right tool automatically | ✅ Complete |
+| **Real-time stock data** | Live price, daily change %, volume, P/E, EPS, 52-week range | ✅ Complete |
+| **Stock history & comparison** | OHLCV history for any period; side-by-side multi-stock comparison | ✅ Complete |
+| **RAG over financial documents** | Upload PDFs; ChromaDB embeds and retrieves relevant chunks | ✅ Complete |
+| **Groq LLM reasoning** | llama3-70b-8192 for fast, accurate financial Q&A | ✅ Complete |
+| **REST API** | Full FastAPI backend with typed endpoints | ✅ Complete |
+| **React frontend** | Chat UI with stock cards and chart rendering | ✅ Complete |
+| **AWS EC2 deployment** | Ubuntu 24.04, t3.micro, 20GB gp3 EBS | ✅ Live |
+| **Nginx reverse proxy** | Routes `/` → React, `/api/*` → FastAPI | 🔄 In progress |
+| **HTTPS / SSL** | Let's Encrypt via Certbot | 🔄 Planned |
+| **Systemd auto-restart** | Backend survives reboots and crashes | 🔄 Planned |
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **LLM** | Ollama phi | Local inference, zero cost |
-| **Embeddings** | all-MiniLM-L6-v2 | Semantic search, 384-dim vectors |
-| **Vector Store** | ChromaDB | Persistent document embeddings |
-| **Agent Framework** | LangGraph | Stateful multi-agent orchestration |
-| **RAG Framework** | LangChain | Document loading, retrieval chains |
-| **Market Data** | yfinance | Live stock prices and fundamentals |
-| **Database** | SQLite | Financial metrics and breakdowns |
-| **API** | FastAPI | Production REST backend |
-| **UI** | Streamlit | Interactive frontend dashboard |
-| **Evaluation** | RAGAS | RAG faithfulness and relevance scoring |
+- **Backend**: FastAPI + Uvicorn (Python)
+- **Frontend**: React + Vite (TypeScript)
+- **Agent Orchestration**: LangGraph (multi-agent graph with tool routing)
+- **LLM Provider**: Groq API — `llama3-70b-8192` / `mixtral-8x7b`
+- **Financial Data**: yFinance (NSE & US markets)
+- **Vector Store**: ChromaDB (document embedding + semantic search)
+- **Cloud**: AWS EC2 — `t3.micro`, Ubuntu 24.04 LTS, ap-south-1 (Mumbai)
+- **Proxy**: Nginx (static serving + API reverse proxy)
+- **SSL**: Let's Encrypt via Certbot
 
 ---
 
-## Evaluation
+## API Endpoints
 
-The system uses RAGAS to evaluate RAG quality:
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | Health check |
+| `POST` | `/chat` | Send a message to the LangGraph agent |
+| `GET` | `/market/quote?symbol=INFY.NS` | Live stock quote |
+| `GET` | `/market/chart?symbol=TCS.NS&period=1mo` | OHLCV chart data |
+| `GET` | `/market/search?q=apple` | Ticker symbol search |
+| `POST` | `/research/query` | RAG query over uploaded documents |
+| `POST` | `/research/upload` | Upload a PDF for embedding |
+
+**Indian stocks**: append `.NS` (e.g. `INFY.NS`, `TCS.NS`, `WIPRO.NS`)
+**US stocks**: plain ticker (e.g. `MSFT`, `GOOGL`, `AAPL`)
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.11+
+- Node.js 22 LTS
+- A [Groq API key](https://console.groq.com/) (free tier available)
+
+### Local Development
 
 ```bash
-python -m evals.ragas_eval
+# Clone the repo
+git clone https://github.com/ParthSharma-2/FinSight-AI.git
+cd FinSight-AI
+
+# Backend
+cd backend
+python3 -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# Set environment variables
+cp .env.example .env
+# Add your GROQ_API_KEY to .env
+
+# Start the backend
+uvicorn main:app --reload --port 8000
+
+# Frontend (new terminal)
+cd ../frontend
+npm install
+npm run dev
 ```
 
-Metrics tracked:
-- **Faithfulness** — Are answers grounded in the retrieved context?
-- **Answer Relevance** — Does the answer address the question?
-- **Context Precision** — Are the retrieved chunks actually useful?
-- **Context Recall** — Did retrieval find all relevant information?
+Visit `http://localhost:5173` — the frontend is live and connected to the backend.
+
+### AWS EC2 Deployment
+
+See [`docs/AWS_DEPLOYMENT.md`](docs/AWS_DEPLOYMENT.md) for the full 8-phase deployment guide:
+
+1. EC2 provisioning (AMI, instance type, storage, security groups)
+2. SSH access + PEM key setup (Windows icacls fix included)
+3. Server setup (apt, Git, Python, Node.js)
+4. Backend deployment (venv, pip, uvicorn)
+5. Frontend build + Nginx static serving
+6. Nginx reverse proxy configuration
+7. Elastic IP + domain + HTTPS (Let's Encrypt)
+8. Production hardening + systemd auto-restart
+
+---
+
+## Project Structure
+
+```
+FinSight-AI/
+├── backend/
+│   ├── main.py          # FastAPI app — all endpoints
+│   ├── graph.py         # LangGraph agent + tool routing
+│   ├── market.py        # yFinance tools (@tool decorated)
+│   ├── rag.py           # ChromaDB ingestion + retrieval
+│   ├── requirements.txt
+│   └── .env.example
+├── frontend/
+│   ├── src/
+│   │   ├── api.js       # Centralized API fetch wrapper
+│   │   ├── pages/       # Chat, Home, Research pages
+│   │   └── components/  # StockCard, ChatBubble, ChartView
+│   ├── package.json
+│   └── vite.config.ts
+├── data/
+│   └── chroma/          # ChromaDB vector store (local)
+├── docs/
+│   └── AWS_DEPLOYMENT.md
+└── README.md
+```
+
+---
+
+## Financial Tools (market.py)
+
+Three `@tool`-decorated functions, callable by the LangGraph agent:
+
+**`get_stock_price(ticker)`** — Returns live price, daily change %, volume, 52-week high/low, market cap, P/E ratio, EPS, and dividend yield.
+
+**`get_stock_history(ticker, period)`** — Returns start/end price, total return %, period high/low, and trading day count for any period (1d to 5y).
+
+**`compare_stocks(tickers)`** — Accepts a comma-separated list of tickers and returns a side-by-side table of price, 1-month return %, P/E ratio, and market cap.
+
+---
+
+## AWS Cost Summary
+
+Running this on AWS with free-tier eligibility:
+
+| Resource | Monthly Cost |
+|---|---|
+| EC2 t3.micro (750 hrs/month) | **Free** (12 months) |
+| EBS 20GB gp3 | **Free** (30GB limit) |
+| Data transfer (first 100GB) | **Free** |
+| Elastic IP (when attached) | **Free** |
+| Let's Encrypt SSL | **Free** |
+| Groq API | **Free tier** |
+| Custom domain (optional) | ~$1/month |
 
 ---
 
 ## Roadmap
 
-- [x] RAG pipeline with local embeddings
-- [x] ChromaDB vector store with persistence
-- [x] LangGraph multi-agent orchestration
-- [x] Live market data integration
-- [x] Financial SQL database
-- [x] Conversation memory
-- [x] FastAPI REST backend
-- [x] Streamlit UI
-- [ ] RAGAS evaluation harness (in progress)
-- [ ] Docker deployment
-- [ ] Multi-document support
-- [ ] Reranking with cross-encoder
+- [ ] Phase 3–8: Full production deployment on EC2
+- [ ] RAGAS evaluation of the RAG pipeline
+- [ ] CloudWatch monitoring + alerting
+- [ ] Portfolio tracking with persistent user sessions
+- [ ] Earnings call transcript ingestion
+- [ ] Options chain data integration
+- [ ] Custom domain + HTTPS live URL
 
 ---
 
@@ -284,21 +213,8 @@ Metrics tracked:
 
 **Parth Sharma**
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/parth-sharma-work)
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=for-the-badge&logo=github)](https://github.com/ParthSharma-2)
+Built as a portfolio project demonstrating end-to-end ML system design: multi-agent LLM orchestration, RAG pipelines, financial data engineering, REST API development, and cloud deployment on AWS.
 
 ---
 
-## License
-
-MIT License — see [LICENSE](LICENSE) for details.
-
----
-
-<div align="center">
-
-**Built with LangChain · LangGraph · Ollama · ChromaDB · FastAPI · Streamlit**
-
-*If this project helped you, please give it a star*
-
-</div>
+*FinSight AI is a portfolio project and does not constitute financial advice.*
