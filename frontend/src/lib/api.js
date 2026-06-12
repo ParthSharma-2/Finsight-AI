@@ -4,7 +4,7 @@
 // Base URL reads from env var; falls back to localhost for dev.
 // ============================================================
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://13.205.153.34';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 /**
  * Core fetch wrapper with error handling and JSON parsing.
