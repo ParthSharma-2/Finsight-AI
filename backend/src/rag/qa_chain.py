@@ -59,12 +59,12 @@ Answer:
 
     response = llm.invoke(prompt)
 
-    return {{
+    return {
         "question": question,
         "answer": response.content,
         "source_documents": docs,
         "num_sources": len(docs)
-    }}
+    }
 
 
 if __name__ == "__main__":
@@ -77,10 +77,10 @@ if __name__ == "__main__":
 
     for q in questions:
 
-        print(f"\n{{'='*60}}")
+        print("\n" + "=" * 60)
 
         result = answer_question(q)
 
-        print(f"Q: {{result['question']}}")
-        print(f"A: {{result['answer']}}")
-        print(f"Sources used: {{result['num_sources']}} chunks")
+        print(f"Q: {result['question']}")
+        print(f"A: {result['answer']}")
+        print(f"Sources used: {result['num_sources']} chunks")
