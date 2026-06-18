@@ -34,9 +34,11 @@ export default function Research() {
       await uploadDocument(file);
       setUploadedFiles(prev => [...prev, { name: file.name, size: file.size, status: 'indexed' }]);
       setUploadStatus('done');
-    } catch {
+    } catch (err) {
       // Backend may not have /research/upload yet — show it as pending
-      setUploadedFiles(prev => [...prev, { name: file.name, size: file.size, status: 'pending' }]);
+      console.error(err);
+
+      setUploadedFiles(prev => [...prev, { name: file.name, size: file.size, status: 'failed' }]);
       setUploadStatus('error');
     }
     setTimeout(() => setUploadStatus(null), 3000);
@@ -95,7 +97,7 @@ export default function Research() {
                 )}
                 {uploadStatus === 'error' && (
                   <div className="mt-3 mono text-[11px] text-amber">
-                    ⚠ Backend RAG endpoint not ready — saved as pending
+                    ⚠ Document upload failed. See browser console/server logs.
                   </div>
                 )}
 
