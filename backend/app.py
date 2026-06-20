@@ -5,9 +5,13 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from fastapi import FastAPI, UploadFile, File, HTTPException
+
 from src.agents.graph import run_agent
 from src.rag.qa_chain import answer_question
 from src.rag.ingestion import ingest_document
+import os
+import shutil
 
 # =========================================
 # FastAPI App Initialization
@@ -81,9 +85,14 @@ async def chat(request: ChatRequest):
 
     except Exception as e:
 
-        return {
-            "response": f"Error: {str(e)}"
-        }
+        import traceback
+
+        traceback.print_exc()
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
     
 class ResearchRequest(BaseModel):
     query: str
