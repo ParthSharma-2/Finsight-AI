@@ -4,7 +4,7 @@
 // Base URL reads from env var; falls back to localhost for dev.
 // ============================================================
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://api.finsightai.space/api';
 
 /**
  * Core fetch wrapper with error handling and JSON parsing.
