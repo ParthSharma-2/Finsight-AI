@@ -129,6 +129,51 @@ def get_market_quote(symbol: str):
         raise HTTPException(status_code=500, detail=f"Failed to fetch quote: {str(e)}")
 
 
+@app.get("/market/quotes")
+def get_market_quotes(symbols: str):
+    sym_list = [s.strip().upper() for s in symbols.split(",") if s.strip()]
+    if not sym_list:
+        return []
+
+    cache_key = f"quotes_{'_'.join(sorted(sym_list))}"
+    cached = get_cached(cache_key, ttl=60)
+    if cached:
+        return cached
+
+    results = []
+    for sym in sym_list:
+        quote = get_cached(f"quote_{sym}", ttl=60)
+        if quote:
+            results.append(quote)
+            continue
+        try:
+            t = yf.Ticker(sym)
+            hist = t.history(period="5d")
+            if not hist.empty:
+                curr = float(hist['Close'].iloc[-1])
+                prev = float(hist['Close'].iloc[-2]) if len(hist) > 1 else curr
+                chg = curr - prev
+                chg_pct = (chg / prev) * 100 if prev else 0.0
+                vol = int(hist['Volume'].iloc[-1]) if 'Volume' in hist else 0
+                q = {
+                    "symbol": sym,
+                    "price": round(curr, 2),
+                    "change": round(chg, 2),
+                    "change_pct": round(chg_pct, 2),
+                    "volume": vol,
+                    "up": chg >= 0
+                }
+                set_cached(f"quote_{sym}", q)
+                results.append(q)
+            else:
+                results.append({"symbol": sym, "price": None, "change": 0, "change_pct": 0, "up": True})
+        except Exception:
+            results.append({"symbol": sym, "price": None, "change": 0, "change_pct": 0, "up": True})
+
+    set_cached(cache_key, results)
+    return results
+
+
 @app.get("/market/chart")
 def get_market_chart(symbol: str, period: str = "1mo"):
     sym = symbol.strip().upper()

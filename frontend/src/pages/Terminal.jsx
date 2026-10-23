@@ -1,70 +1,160 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Plus, RefreshCw, TrendingUp, TrendingDown, Sparkles, LineChart, Table, MessageSquare, BarChart3, Layers } from 'lucide-react';
 import AITerminal from '../components/AITerminal';
 import ChartPanel from '../components/ChartPanel';
 import MetricCard from '../components/MetricCard';
+import { getStockQuotes } from '../lib/api';
 
-const WATCHLIST = [
-  { symbol: 'AAPL', name: 'Apple Inc.', price: '189.47', chg: '+1.23', pct: '+0.65%', up: true },
-  { symbol: 'MSFT', name: 'Microsoft', price: '415.32', chg: '+3.11', pct: '+0.75%', up: true },
-  { symbol: 'NVDA', name: 'NVIDIA', price: '875.20', chg: '-12.40', pct: '-1.40%', up: false },
-  { symbol: 'GOOGL', name: 'Alphabet', price: '175.58', chg: '+2.89', pct: '+1.67%', up: true },
-  { symbol: 'META', name: 'Meta Platforms', price: '524.13', chg: '+7.02', pct: '+1.36%', up: true },
-  { symbol: 'AMZN', name: 'Amazon', price: '198.44', chg: '-0.87', pct: '-0.44%', up: false },
-  { symbol: 'TSLA', name: 'Tesla', price: '181.29', chg: '+4.65', pct: '+2.64%', up: true },
-  { symbol: 'JPM', name: 'JPMorgan Chase', price: '213.05', chg: '+1.85', pct: '+0.88%', up: true },
-];
+const DEFAULT_SYMBOLS = ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'META', 'AMZN', 'TSLA', 'INFY.NS'];
+
+const COMPANY_NAMES = {
+  AAPL: 'Apple Inc.',
+  MSFT: 'Microsoft Corp',
+  NVDA: 'NVIDIA Corp',
+  GOOGL: 'Alphabet Inc.',
+  META: 'Meta Platforms',
+  AMZN: 'Amazon.com',
+  TSLA: 'Tesla Inc.',
+  'INFY.NS': 'Infosys Ltd',
+};
 
 const SCREENER_DATA = [
-  { symbol: 'NVDA', pe: '65.2', eps: '13.44', mktcap: '2.16T', rev: '+265%', sector: 'Tech' },
-  { symbol: 'AAPL', pe: '28.7', eps: '6.57', mktcap: '2.91T', rev: '+3%', sector: 'Tech' },
-  { symbol: 'MSFT', pe: '35.4', eps: '11.73', mktcap: '3.08T', rev: '+17%', sector: 'Tech' },
-  { symbol: 'META', pe: '27.1', eps: '19.35', mktcap: '1.34T', rev: '+27%', sector: 'Tech' },
-  { symbol: 'AMZN', pe: '53.8', eps: '3.68', mktcap: '2.09T', rev: '+13%', sector: 'Consumer' },
+  { symbol: 'NVDA', pe: '54.2x', eps: '$2.82', mktcap: '$3.12T', rev: '+122%', sector: 'Semiconductors' },
+  { symbol: 'AAPL', pe: '33.5x', eps: '$6.57', mktcap: '$3.48T', rev: '+4.9%', sector: 'Consumer Tech' },
+  { symbol: 'MSFT', pe: '35.4x', eps: '$11.80', mktcap: '$3.31T', rev: '+15.2%', sector: 'Enterprise Cloud' },
+  { symbol: 'META', pe: '28.1x', eps: '$21.20', mktcap: '$1.49T', rev: '+22.1%', sector: 'Digital Media' },
+  { symbol: 'AMZN', pe: '42.8x', eps: '$4.18', mktcap: '$1.94T', rev: '+11.0%', sector: 'E-Commerce / Cloud' },
 ];
 
-const TABS = ['CHAT', 'WATCHLIST', 'SCREENER', 'CHARTS'];
+const TABS = [
+  { id: 'CHAT', label: 'AI Terminal', icon: MessageSquare },
+  { id: 'WATCHLIST', label: 'Watchlist', icon: Table },
+  { id: 'CHARTS', label: 'Live Charts', icon: LineChart },
+  { id: 'SCREENER', label: 'Screener', icon: BarChart3 },
+];
 
 export default function Terminal() {
   const [activeTab, setActiveTab] = useState('CHAT');
+  const [symbols, setSymbols] = useState(() => {
+    const saved = localStorage.getItem('finsight-watchlist');
+    return saved ? JSON.parse(saved) : DEFAULT_SYMBOLS;
+  });
+  const [watchlistData, setWatchlistData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [newTickerInput, setNewTickerInput] = useState('');
+
+  const fetchLiveWatchlist = async (symList) => {
+    setLoading(true);
+    try {
+      const quotes = await getStockQuotes(symList);
+      if (Array.isArray(quotes)) {
+        const enriched = quotes.map((q) => ({
+          symbol: q.symbol,
+          name: COMPANY_NAMES[q.symbol] || q.symbol,
+          price: q.price !== null && q.price !== undefined ? `$${q.price}` : 'Loading...',
+          chg: q.change ? `${q.change > 0 ? '+' : ''}${q.change}` : '—',
+          pct: q.change_pct ? `${q.change_pct > 0 ? '+' : ''}${q.change_pct}%` : '—',
+          up: q.up,
+        }));
+        setWatchlistData(enriched);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch live watchlist:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveWatchlist(symbols);
+  }, [symbols]);
+
+  const handleAddTicker = (e) => {
+    e.preventDefault();
+    const clean = newTickerInput.trim().toUpperCase();
+    if (clean && !symbols.includes(clean)) {
+      const updated = [...symbols, clean];
+      setSymbols(updated);
+      localStorage.setItem('finsight-watchlist', JSON.stringify(updated));
+      setNewTickerInput('');
+    }
+  };
+
+  const handleRemoveTicker = (sym) => {
+    const updated = symbols.filter(s => s !== sym);
+    setSymbols(updated);
+    localStorage.setItem('finsight-watchlist', JSON.stringify(updated));
+  };
 
   return (
-    <div className="min-h-screen pt-12 bg-terminal-bg flex flex-col">
-      {/* Terminal header bar */}
-      <div className="border-b border-terminal px-6 py-2 flex items-center justify-between bg-surface">
-        <div className="flex items-center gap-4">
-          <span className="mono text-[11px] tracking-widest text-accent">FINSIGHT TERMINAL</span>
-          <span className="mono text-[10px] text-muted">SESSION:{' '}
-            <span className="text-dim">{Math.random().toString(36).slice(2, 10).toUpperCase()}</span>
-          </span>
+    <div className="min-h-[calc(100vh-3.5rem)] flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50">
+      {/* Top Status Bar */}
+      <div className="border-b border-zinc-200 dark:border-zinc-800 px-6 py-2.5 flex items-center justify-between bg-white dark:bg-zinc-900/60 text-xs font-mono">
+        <div className="flex items-center gap-3">
+          <span className="font-bold text-indigo-600 dark:text-indigo-400">FINSIGHT PRO TERMINAL</span>
+          <span className="text-zinc-400">|</span>
+          <span className="text-zinc-500">LIVE FEED: <span className="text-emerald-500 font-semibold">ACTIVE</span></span>
         </div>
-        <div className="flex items-center gap-3 mono text-[10px] text-dim">
-          <span>NYSE: OPEN</span>
-          <span className="text-border">|</span>
-          <span>NASDAQ: OPEN</span>
-          <span className="text-border">|</span>
-          <span className="text-green">● LIVE</span>
+        <div className="flex items-center gap-4 text-zinc-500 dark:text-zinc-400">
+          <span className="hidden sm:inline">NYSE: OPEN</span>
+          <span className="hidden sm:inline">•</span>
+          <span className="hidden sm:inline">NASDAQ: OPEN</span>
+          <span className="hidden sm:inline">•</span>
+          <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            REAL-TIME
+          </span>
         </div>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Left sidebar — watchlist */}
-        <aside className="hidden lg:flex flex-col w-56 border-r border-terminal bg-surface flex-shrink-0">
-          <div className="panel-header">
-            <span style={{ color: 'var(--accent)' }}>◉</span>
-            WATCHLIST
+        {/* Left Sidebar — Live Watchlist */}
+        <aside className="hidden lg:flex flex-col w-64 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 shrink-0">
+          <div className="p-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+            <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+              <span>Watchlist</span>
+              <span className="text-[10px] font-mono text-zinc-400 font-normal">({symbols.length})</span>
+            </span>
+            <button
+              onClick={() => fetchLiveWatchlist(symbols)}
+              title="Refresh live quotes"
+              className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-indigo-500' : ''}`} />
+            </button>
           </div>
-          <div className="flex-1 overflow-y-auto">
-            {WATCHLIST.map((stock) => (
-              <div key={stock.symbol} className="px-3 py-2.5 border-b border-terminal hover:bg-panel cursor-pointer transition-colors group">
+
+          {/* Add Ticker input */}
+          <form onSubmit={handleAddTicker} className="p-2 border-b border-zinc-200/80 dark:border-zinc-800/80">
+            <div className="relative">
+              <input
+                type="text"
+                value={newTickerInput}
+                onChange={(e) => setNewTickerInput(e.target.value)}
+                placeholder="+ Add symbol (e.g. TSLA)"
+                className="w-full bg-zinc-100 dark:bg-zinc-800/60 text-xs font-mono text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 px-3 py-1.5 rounded-lg border border-transparent focus:border-indigo-500 focus:outline-none"
+              />
+            </div>
+          </form>
+
+          {/* Watchlist Items */}
+          <div className="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/60">
+            {watchlistData.map((stock) => (
+              <div
+                key={stock.symbol}
+                className="p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 cursor-pointer transition-colors group"
+              >
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="mono text-xs font-600 text-white">{stock.symbol}</span>
-                  <span className="mono text-xs font-500" style={{ color: stock.up ? 'var(--green)' : 'var(--red)' }}>
+                  <span className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                    {stock.symbol}
+                  </span>
+                  <span className="font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">
                     {stock.price}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="mono text-[9px] text-muted truncate">{stock.name}</span>
-                  <span className="mono text-[10px]" style={{ color: stock.up ? 'var(--green)' : 'var(--red)' }}>
+                <div className="flex items-center justify-between text-[11px] font-mono">
+                  <span className="text-zinc-400 truncate max-w-[110px]">{stock.name}</span>
+                  <span className={`font-semibold ${stock.up ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                     {stock.pct}
                   </span>
                 </div>
@@ -73,153 +163,147 @@ export default function Terminal() {
           </div>
         </aside>
 
-        {/* Main content area */}
+        {/* Main Workspace Area */}
         <main className="flex-1 flex flex-col overflow-hidden">
-          {/* Tab bar */}
-          <div className="flex border-b border-terminal bg-surface">
-            {TABS.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className="mono text-[11px] px-5 py-3 tracking-widest transition-all border-r border-terminal"
-                style={{
-                  color: activeTab === tab ? 'var(--accent)' : 'var(--dim)',
-                  background: activeTab === tab ? 'var(--panel)' : 'transparent',
-                  borderBottom: activeTab === tab ? '2px solid var(--accent)' : '2px solid transparent',
-                }}
-              >
-                {tab}
-              </button>
-            ))}
+          {/* Tab Navigation */}
+          <div className="flex border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 px-4">
+            {TABS.map((tab) => {
+              const Icon = tab.icon;
+              const active = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 text-xs font-semibold px-4 py-3 border-b-2 transition-all ${
+                    active
+                      ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                      : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Tab content */}
-          <div className="flex-1 overflow-auto p-4">
+          {/* Active Tab View */}
+          <div className="flex-1 overflow-auto p-4 sm:p-6">
             {activeTab === 'CHAT' && <AITerminal />}
 
             {activeTab === 'WATCHLIST' && (
-              <div className="panel">
-                <div className="panel-header">
-                  <span style={{ color: 'var(--accent)' }}>◉</span> FULL WATCHLIST
+              <div className="fin-card p-6">
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-zinc-100 dark:border-zinc-800">
+                  <div>
+                    <h3 className="font-semibold text-base text-zinc-900 dark:text-zinc-100">
+                      Live Watchlist Portfolio
+                    </h3>
+                    <p className="text-xs text-zinc-500">Real-time quotes fetched live via Yahoo Finance</p>
+                  </div>
+                  <button
+                    onClick={() => fetchLiveWatchlist(symbols)}
+                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                    <span>Refresh Quotes</span>
+                  </button>
                 </div>
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-terminal">
-                      {['SYMBOL', 'COMPANY', 'PRICE', 'CHANGE', '%', 'ACTION'].map(h => (
-                        <th key={h} className="mono text-[10px] text-muted text-left px-4 py-2.5 tracking-wider">
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {WATCHLIST.map((stock) => (
-                      <tr key={stock.symbol} className="border-b border-terminal hover:bg-surface transition-colors cursor-pointer">
-                        <td className="px-4 py-3 mono text-xs font-600 text-white">{stock.symbol}</td>
-                        <td className="px-4 py-3 mono text-xs text-dim">{stock.name}</td>
-                        <td className="px-4 py-3 mono text-xs font-500 text-terminal">{stock.price}</td>
-                        <td className="px-4 py-3 mono text-xs" style={{ color: stock.up ? 'var(--green)' : 'var(--red)' }}>
-                          {stock.chg}
-                        </td>
-                        <td className="px-4 py-3 mono text-xs" style={{ color: stock.up ? 'var(--green)' : 'var(--red)' }}>
-                          {stock.pct}
-                        </td>
-                        <td className="px-4 py-3">
-                          <button className="mono text-[10px] px-2 py-0.5 border border-terminal text-muted hover:text-accent hover:border-accent/40 transition-all">
-                            ANALYZE
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
 
-            {activeTab === 'SCREENER' && (
-              <div className="panel">
-                <div className="panel-header">
-                  <span style={{ color: 'var(--amber)' }}>◑</span> EQUITY SCREENER
-                  <span className="ml-auto mono text-[10px] text-muted">Tech Sector | Large Cap</span>
-                </div>
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-terminal">
-                      {['TICKER', 'P/E', 'EPS', 'MKT CAP', 'REV GROWTH', 'SECTOR'].map(h => (
-                        <th key={h} className="mono text-[10px] text-muted text-left px-4 py-2.5 tracking-wider">
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {SCREENER_DATA.map((row) => (
-                      <tr key={row.symbol} className="border-b border-terminal hover:bg-surface transition-colors">
-                        <td className="px-4 py-3 mono text-xs font-600 text-accent">{row.symbol}</td>
-                        <td className="px-4 py-3 mono text-xs text-terminal">{row.pe}</td>
-                        <td className="px-4 py-3 mono text-xs text-terminal">${row.eps}</td>
-                        <td className="px-4 py-3 mono text-xs text-terminal">{row.mktcap}</td>
-                        <td className="px-4 py-3 mono text-xs" style={{ color: 'var(--green)' }}>{row.rev}</td>
-                        <td className="px-4 py-3 mono text-xs text-dim">{row.sector}</td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead>
+                      <tr className="border-b border-zinc-100 dark:border-zinc-800 text-zinc-400 uppercase text-[10px]">
+                        <th className="py-2.5 px-3">Symbol</th>
+                        <th className="py-2.5 px-3">Company</th>
+                        <th className="py-2.5 px-3">Live Price</th>
+                        <th className="py-2.5 px-3">Change ($)</th>
+                        <th className="py-2.5 px-3">Change (%)</th>
+                        <th className="py-2.5 px-3 text-right">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div className="px-4 pb-3 mono text-[9px] text-muted">
-                  * Static demo data — connect Alpha Vantage / Polygon API for live screener
+                    </thead>
+                    <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                      {watchlistData.map((s) => (
+                        <tr key={s.symbol} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/40 transition-colors">
+                          <td className="py-3 px-3 font-bold text-zinc-900 dark:text-zinc-100">{s.symbol}</td>
+                          <td className="py-3 px-3 text-zinc-500">{s.name}</td>
+                          <td className="py-3 px-3 font-bold text-zinc-900 dark:text-zinc-100">{s.price}</td>
+                          <td className={`py-3 px-3 font-semibold ${s.up ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                            {s.chg}
+                          </td>
+                          <td className={`py-3 px-3 font-semibold ${s.up ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                            {s.pct}
+                          </td>
+                          <td className="py-3 px-3 text-right">
+                            <button
+                              onClick={() => handleRemoveTicker(s.symbol)}
+                              className="text-[11px] text-zinc-400 hover:text-rose-500 transition-colors"
+                            >
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}
 
             {activeTab === 'CHARTS' && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <ChartPanel />
-                <div className="grid grid-cols-2 gap-px bg-border">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {[
-                    { label: 'MARKET CAP', value: '$2.91T', change: '+23B', changePct: '+0.8%' },
-                    { label: '52W HIGH', value: '$199.62', sub: 'AAPL' },
+                    { label: 'MARKET CAP', value: '$3.48T', change: '+24B', changePct: '+0.7%' },
+                    { label: '52W HIGH', value: '$237.23', sub: 'AAPL' },
                     { label: '52W LOW', value: '$164.08', sub: 'AAPL' },
-                    { label: 'AVG VOLUME', value: '58.3M', sub: '30-day avg' },
+                    { label: 'P/E RATIO', value: '33.5x', sub: 'TRAILING' },
                   ].map((m, i) => (
                     <MetricCard key={i} {...m} />
                   ))}
                 </div>
               </div>
             )}
-          </div>
-        </main>
 
-        {/* Right panel — quick metrics */}
-        <aside className="hidden xl:flex flex-col w-52 border-l border-terminal bg-surface flex-shrink-0">
-          <div className="panel-header">
-            <span style={{ color: 'var(--green)' }}>◐</span>
-            INDICES
-          </div>
-          <div className="p-3 space-y-3">
-            {[
-              { n: 'S&P 500', v: '5,277', c: '+0.27%', up: true },
-              { n: 'DJIA', v: '39,069', c: '+0.10%', up: true },
-              { n: 'NASDAQ', v: '16,428', c: '+0.44%', up: true },
-              { n: 'VIX', v: '13.82', c: '-3.15%', up: false },
-              { n: 'BTC', v: '$67,240', c: '+1.86%', up: true },
-              { n: 'GOLD', v: '$2,347', c: '-0.14%', up: false },
-              { n: 'OIL WTI', v: '$79.82', c: '+0.32%', up: true },
-              { n: 'EUR/USD', v: '1.0847', c: '-0.08%', up: false },
-              { n: '10Y UST', v: '4.52%', c: '+2bps', up: false },
-              { n: 'FED RATE', v: '5.25%', c: 'HOLD', up: null },
-            ].map(({ n, v, c, up }) => (
-              <div key={n} className="flex items-center justify-between">
-                <span className="mono text-[10px] text-dim">{n}</span>
-                <div className="text-right">
-                  <div className="mono text-[11px] text-terminal">{v}</div>
-                  <div className="mono text-[9px]" style={{
-                    color: up === null ? 'var(--amber)' : up ? 'var(--green)' : 'var(--red)'
-                  }}>{c}</div>
+            {activeTab === 'SCREENER' && (
+              <div className="fin-card p-6">
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-zinc-100 dark:border-zinc-800">
+                  <h3 className="font-semibold text-base text-zinc-900 dark:text-zinc-100">
+                    Equity Valuation Screener
+                  </h3>
+                  <span className="text-xs font-mono text-zinc-400">Large Cap Tech</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead>
+                      <tr className="border-b border-zinc-100 dark:border-zinc-800 text-zinc-400 uppercase text-[10px]">
+                        <th className="py-2.5 px-3">Ticker</th>
+                        <th className="py-2.5 px-3">P/E</th>
+                        <th className="py-2.5 px-3">EPS</th>
+                        <th className="py-2.5 px-3">Market Cap</th>
+                        <th className="py-2.5 px-3">Revenue YoY</th>
+                        <th className="py-2.5 px-3">Sector</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                      {SCREENER_DATA.map((row) => (
+                        <tr key={row.symbol} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/40 transition-colors">
+                          <td className="py-3 px-3 font-bold text-indigo-600 dark:text-indigo-400">{row.symbol}</td>
+                          <td className="py-3 px-3 text-zinc-700 dark:text-zinc-300">{row.pe}</td>
+                          <td className="py-3 px-3 text-zinc-700 dark:text-zinc-300">{row.eps}</td>
+                          <td className="py-3 px-3 text-zinc-700 dark:text-zinc-300">{row.mktcap}</td>
+                          <td className="py-3 px-3 font-semibold text-emerald-600 dark:text-emerald-400">{row.rev}</td>
+                          <td className="py-3 px-3 text-zinc-500">{row.sector}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-            ))}
+            )}
           </div>
-        </aside>
+        </main>
       </div>
     </div>
   );

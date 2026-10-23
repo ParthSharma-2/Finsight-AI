@@ -87,6 +87,15 @@ export async function getStockQuote(symbol) {
 }
 
 /**
+ * Fetch multiple stock quotes in a batch.
+ * GET /market/quotes?symbols=AAPL,MSFT,NVDA
+ */
+export async function getStockQuotes(symbols) {
+  const symStr = Array.isArray(symbols) ? symbols.join(',') : symbols;
+  return apiFetch(`/market/quotes?symbols=${encodeURIComponent(symStr)}`);
+}
+
+/**
  * Fetch stock chart data.
  * GET /market/chart?symbol=AAPL&period=1mo
  */
