@@ -1,147 +1,171 @@
+import { TrendingUp, TrendingDown, Sparkles } from 'lucide-react';
 import ChartPanel from '../components/ChartPanel';
 import MetricCard from '../components/MetricCard';
 
 const SECTOR_PERFORMANCE = [
   { sector: 'Technology', chg: '+2.14%', ytd: '+28.4%', up: true },
-  { sector: 'Healthcare', chg: '+0.87%', ytd: '+12.1%', up: true },
+  { sector: 'Communication Services', chg: '+1.78%', ytd: '+22.1%', up: true },
   { sector: 'Financials', chg: '+1.23%', ytd: '+18.7%', up: true },
-  { sector: 'Energy', chg: '-0.45%', ytd: '+5.2%', up: false },
-  { sector: 'Consumer Disc.', chg: '-0.12%', ytd: '+9.8%', up: false },
+  { sector: 'Healthcare', chg: '+0.87%', ytd: '+12.1%', up: true },
   { sector: 'Industrials', chg: '+0.56%', ytd: '+11.3%', up: true },
+  { sector: 'Materials', chg: '+0.33%', ytd: '+7.5%', up: true },
+  { sector: 'Consumer Discretionary', chg: '-0.12%', ytd: '+9.8%', up: false },
+  { sector: 'Energy', chg: '-0.45%', ytd: '+5.2%', up: false },
   { sector: 'Utilities', chg: '-0.78%', ytd: '-2.1%', up: false },
   { sector: 'Real Estate', chg: '-1.02%', ytd: '-4.7%', up: false },
-  { sector: 'Materials', chg: '+0.33%', ytd: '+7.5%', up: true },
-  { sector: 'Comm. Services', chg: '+1.78%', ytd: '+22.1%', up: true },
 ];
 
 const TOP_MOVERS = {
   gainers: [
-    { symbol: 'SMCI', price: '884.20', chg: '+12.4%' },
-    { symbol: 'ARM', price: '134.55', chg: '+8.7%' },
-    { symbol: 'PLTR', price: '28.34', chg: '+6.2%' },
-    { symbol: 'MSTR', price: '1,542', chg: '+5.9%' },
-    { symbol: 'COIN', price: '248.77', chg: '+5.4%' },
+    { symbol: 'NVDA', name: 'NVIDIA Corp', price: '$126.40', chg: '+4.2%' },
+    { symbol: 'SMCI', name: 'Super Micro', price: '$48.20', chg: '+3.9%' },
+    { symbol: 'PLTR', name: 'Palantir Tech', price: '$42.15', chg: '+3.1%' },
+    { symbol: 'ARM',  name: 'Arm Holdings', price: '$138.80', chg: '+2.8%' },
   ],
   losers: [
-    { symbol: 'PARA', price: '10.23', chg: '-7.8%' },
-    { symbol: 'WBD', price: '8.44', chg: '-5.1%' },
-    { symbol: 'MPW', price: '4.15', chg: '-4.7%' },
-    { symbol: 'NYCB', price: '3.88', chg: '-4.2%' },
-    { symbol: 'VFC', price: '14.32', chg: '-3.8%' },
+    { symbol: 'INTC', name: 'Intel Corp', price: '$22.10', chg: '-3.8%' },
+    { symbol: 'WBD',  name: 'Warner Bros', price: '$7.45', chg: '-2.9%' },
+    { symbol: 'PARA', name: 'Paramount', price: '$10.80', chg: '-2.4%' },
+    { symbol: 'VFC',  name: 'V.F. Corp', price: '$15.20', chg: '-1.9%' },
   ],
 };
 
 const MACRO_METRICS = [
-  { label: 'Fed Funds Rate', value: '5.25–5.50%', sub: 'Hold — FOMC June 2025', accent: false },
-  { label: '10Y Treasury', value: '4.52%', change: '+0.02', changePct: '+0.44%', sub: 'Yield' },
-  { label: 'CPI (YoY)', value: '3.4%', change: '-0.1', sub: 'Core: 3.6%' },
-  { label: 'GDP Growth', value: '2.9%', change: '+0.3', changePct: 'QoQ Annlzd', sub: 'Q1 2025' },
+  { label: 'S&P 500', value: '5,864.67', change: '+24.12', changePct: '+0.41%', sub: 'INDEX' },
+  { label: 'NASDAQ 100', value: '20,388.20', change: '+142.50', changePct: '+0.70%', sub: 'INDEX' },
+  { label: '10Y TREASURY', value: '4.24%', change: '-0.03', changePct: '-0.70%', sub: 'YIELD' },
+  { label: 'FED FUNDS RATE', value: '4.75–5.00%', sub: 'FOMC TARGET', accent: true },
 ];
 
-export default function Markets() {
+export default function Markets({ onOpenCopilot }) {
   return (
-    <div className="min-h-screen pt-12 bg-terminal-bg">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
-        {/* Page header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-3 h-px bg-accent" />
-              <span className="mono text-[10px] tracking-widest text-accent">MARKET OVERVIEW</span>
-              <span className="mono text-[9px] px-2 py-0.5 border border-green/30 text-green animate-pulse-slow">● LIVE</span>
-            </div>
-            <h1 className="font-display font-700 text-2xl text-white">Market Dashboard</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-xs font-mono font-medium text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+              Market Dashboard
+            </span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">Live Global Feeds</span>
           </div>
-          <div className="mono text-[11px] text-dim hidden md:block">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+            Market Intelligence
+          </h1>
+        </div>
+
+        <button
+          onClick={onOpenCopilot}
+          className="self-start sm:self-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Ask Copilot About Markets</span>
+        </button>
+      </div>
+
+      {/* Macro Metric Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {MACRO_METRICS.map((m, i) => (
+          <MetricCard key={i} {...m} />
+        ))}
+      </div>
+
+      {/* Main Interactive Chart */}
+      <div className="mb-6">
+        <ChartPanel />
+      </div>
+
+      {/* Sectors and Top Movers */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Sector Performance */}
+        <div className="fin-card p-5 sm:p-6 lg:col-span-2">
+          <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-100 dark:border-zinc-800/80">
+            <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Sector Performance (1D)
+            </span>
+            <span className="text-xs font-mono text-zinc-400">YTD Return</span>
           </div>
-        </div>
 
-        {/* Macro metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border mb-6">
-          {MACRO_METRICS.map((m, i) => <MetricCard key={i} {...m} />)}
-        </div>
+          <div className="space-y-3">
+            {SECTOR_PERFORMANCE.map((s) => (
+              <div key={s.sector} className="flex items-center text-xs font-mono">
+                <span className="w-44 text-zinc-700 dark:text-zinc-300 truncate">{s.sector}</span>
 
-        {/* Main chart */}
-        <div className="mb-6">
-          <ChartPanel />
-        </div>
-
-        {/* Two columns: Sectors + Movers */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Sector performance */}
-          <div className="panel lg:col-span-2">
-            <div className="panel-header">
-              <span style={{ color: 'var(--amber)' }}>◑</span>
-              SECTOR PERFORMANCE (1D)
-            </div>
-            <div className="divide-y divide-terminal">
-              {SECTOR_PERFORMANCE.map((s) => (
-                <div key={s.sector} className="flex items-center px-4 py-3 hover:bg-surface/50 transition-colors">
-                  <span className="mono text-xs text-dim flex-1">{s.sector}</span>
-                  {/* Bar */}
-                  <div className="flex-1 mx-4 hidden sm:block">
-                    <div className="h-1 rounded-full overflow-hidden bg-border">
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{
-                          width: `${Math.min(Math.abs(parseFloat(s.chg)) * 15, 100)}%`,
-                          background: s.up ? 'var(--green)' : 'var(--red)',
-                        }}
-                      />
-                    </div>
+                {/* Performance bar */}
+                <div className="flex-1 mx-3 hidden sm:block">
+                  <div className="h-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${
+                        s.up ? 'bg-emerald-500' : 'bg-rose-500'
+                      }`}
+                      style={{
+                        width: `${Math.min(Math.abs(parseFloat(s.chg)) * 25, 100)}%`,
+                      }}
+                    />
                   </div>
-                  <span className="mono text-xs font-500 w-16 text-right"
-                        style={{ color: s.up ? 'var(--green)' : 'var(--red)' }}>
-                    {s.chg}
-                  </span>
-                  <span className="mono text-xs text-dim w-16 text-right">{s.ytd}</span>
+                </div>
+
+                <span
+                  className={`w-16 text-right font-semibold ${
+                    s.up ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                  }`}
+                >
+                  {s.chg}
+                </span>
+
+                <span className="w-14 text-right text-zinc-400">{s.ytd}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Top Movers */}
+        <div className="space-y-4">
+          {/* Gainers */}
+          <div className="fin-card p-5">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-3">
+              <TrendingUp className="w-4 h-4" />
+              <span>Top Gainers</span>
+            </div>
+            <div className="space-y-2.5">
+              {TOP_MOVERS.gainers.map((m) => (
+                <div key={m.symbol} className="flex items-center justify-between text-xs font-mono py-1 border-b border-zinc-100 dark:border-zinc-800/60 last:border-0">
+                  <div>
+                    <span className="font-bold text-zinc-900 dark:text-zinc-100 mr-2">{m.symbol}</span>
+                    <span className="text-[11px] text-zinc-400">{m.name}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-zinc-700 dark:text-zinc-300 mr-2">{m.price}</span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">{m.chg}</span>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Top movers */}
-          <div className="space-y-4">
-            {/* Gainers */}
-            <div className="panel">
-              <div className="panel-header">
-                <span style={{ color: 'var(--green)' }}>▲</span>
-                TOP GAINERS
-              </div>
-              <div className="divide-y divide-terminal">
-                {TOP_MOVERS.gainers.map((s) => (
-                  <div key={s.symbol} className="flex items-center justify-between px-4 py-2.5 hover:bg-surface transition-colors">
-                    <span className="mono text-xs font-600 text-white">{s.symbol}</span>
-                    <span className="mono text-xs text-terminal">{s.price}</span>
-                    <span className="mono text-xs font-500" style={{ color: 'var(--green)' }}>{s.chg}</span>
-                  </div>
-                ))}
-              </div>
+          {/* Losers */}
+          <div className="fin-card p-5">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 mb-3">
+              <TrendingDown className="w-4 h-4" />
+              <span>Top Losers</span>
             </div>
-
-            {/* Losers */}
-            <div className="panel">
-              <div className="panel-header">
-                <span style={{ color: 'var(--red)' }}>▼</span>
-                TOP LOSERS
-              </div>
-              <div className="divide-y divide-terminal">
-                {TOP_MOVERS.losers.map((s) => (
-                  <div key={s.symbol} className="flex items-center justify-between px-4 py-2.5 hover:bg-surface transition-colors">
-                    <span className="mono text-xs font-600 text-white">{s.symbol}</span>
-                    <span className="mono text-xs text-terminal">{s.price}</span>
-                    <span className="mono text-xs font-500" style={{ color: 'var(--red)' }}>{s.chg}</span>
+            <div className="space-y-2.5">
+              {TOP_MOVERS.losers.map((m) => (
+                <div key={m.symbol} className="flex items-center justify-between text-xs font-mono py-1 border-b border-zinc-100 dark:border-zinc-800/60 last:border-0">
+                  <div>
+                    <span className="font-bold text-zinc-900 dark:text-zinc-100 mr-2">{m.symbol}</span>
+                    <span className="text-[11px] text-zinc-400">{m.name}</span>
                   </div>
-                ))}
-              </div>
+                  <div className="text-right">
+                    <span className="text-zinc-700 dark:text-zinc-300 mr-2">{m.price}</span>
+                    <span className="font-semibold text-rose-600 dark:text-rose-400">{m.chg}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-
-        <p className="mono text-[10px] text-muted mt-6 text-center">
-          ⚠ Market data is simulated for demonstration. Connect live APIs (Yahoo Finance, Alpha Vantage, Polygon) for real-time data.
-        </p>
       </div>
     </div>
   );

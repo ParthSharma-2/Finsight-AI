@@ -3,19 +3,40 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --bg: #080c10;
-    --surface: #0d1117;
-    --panel: #111820;
-    --border: #1e2d3d;
-    --accent: #00d4ff;
-    --green: #00ff88;
-    --amber: #ffb800;
-    --red: #ff4466;
-    --purple: #9f7aea;
-    --text: #c9d8e8;
-    --dim: #6e8899;
-    --muted: #4a6278;
+  :root, .dark {
+    --bg: #09090b;
+    --surface: #121215;
+    --panel: #18181b;
+    --border: #27272a;
+    --border-subtle: #1f1f23;
+    --accent: #6366f1;
+    --accent-hover: #4f46e5;
+    --accent-light: rgba(99, 102, 241, 0.12);
+    --green: #10b981;
+    --red: #f43f5e;
+    --amber: #f59e0b;
+    --text: #fafafa;
+    --text-dim: #a1a1aa;
+    --text-muted: #71717a;
+    color-scheme: dark;
+  }
+
+  .light {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --panel: #f1f5f9;
+    --border: #e2e8f0;
+    --border-subtle: #edf2f7;
+    --accent: #4f46e5;
+    --accent-hover: #4338ca;
+    --accent-light: rgba(79, 70, 229, 0.08);
+    --green: #059669;
+    --red: #e11d48;
+    --amber: #d97706;
+    --text: #0f172a;
+    --text-dim: #475569;
+    --text-muted: #94a3b8;
+    color-scheme: light;
   }
 
   * {
@@ -31,229 +52,73 @@
   body {
     background-color: var(--bg);
     color: var(--text);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   ::selection {
-    background: rgba(0, 212, 255, 0.2);
-    color: #00d4ff;
+    background: rgba(99, 102, 241, 0.25);
+    color: inherit;
   }
 
+  /* Refined, modern Apple-style scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: var(--surface);
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 3px;
+    background: rgba(120, 120, 128, 0.2);
+    border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--muted);
+    background: rgba(120, 120, 128, 0.35);
   }
 }
 
 @layer components {
-  /* CRT Scanline overlay */
-  .crt-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 9999;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.04) 2px,
-      rgba(0, 0, 0, 0.04) 4px
-    );
-  }
-
-  /* Terminal grid background */
-  .grid-bg {
-    background-image:
-      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-  }
-
-  /* Panel component */
-  .panel {
-    background: var(--panel);
+  /* Modern clean card */
+  .fin-card {
+    background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 2px;
+    border-radius: 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   }
 
-  .panel-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--border);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--dim);
+  .fin-card:hover {
+    border-color: rgba(99, 102, 241, 0.3);
   }
 
-  /* Monospace text */
+  /* Subtle glass card */
+  .glass-card {
+    background: rgba(18, 18, 21, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .light .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  /* Monospace tabular metrics */
   .mono {
     font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Glow effects */
-  .glow-cyan {
-    text-shadow: 0 0 12px rgba(0,212,255,0.6);
-    color: #00d4ff;
+  /* Radial ambient glow effect */
+  .radial-glow {
+    background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
   }
 
-  .glow-green {
-    text-shadow: 0 0 12px rgba(0,255,136,0.6);
-    color: #00ff88;
+  .light .radial-glow {
+    background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0) 70%);
   }
-
-  /* Status dot */
-  .status-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 8px rgba(0,255,136,0.8);
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  /* Button styles */
-  .btn-primary {
-    background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.05));
-    border: 1px solid rgba(0,212,255,0.4);
-    color: #00d4ff;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    padding: 10px 20px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-transform: uppercase;
-  }
-
-  .btn-primary:hover {
-    background: rgba(0,212,255,0.2);
-    border-color: #00d4ff;
-    box-shadow: 0 0 20px rgba(0,212,255,0.25);
-  }
-
-  .btn-secondary {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--dim);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    padding: 10px 20px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .btn-secondary:hover {
-    border-color: var(--muted);
-    color: var(--text);
-    background: rgba(255,255,255,0.03);
-  }
-
-  /* Ticker tape */
-  .ticker-wrap {
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  .ticker-inner {
-    display: inline-flex;
-    animation: ticker 40s linear infinite;
-  }
-
-  /* Loading skeleton */
-  .skeleton {
-    background: linear-gradient(90deg, var(--panel) 0%, var(--border) 50%, var(--panel) 100%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s ease-in-out infinite;
-  }
-
-  @keyframes shimmer {
-    0% { background-position: 200% center; }
-    100% { background-position: -200% center; }
-  }
-
-  /* Terminal cursor */
-  .cursor::after {
-    content: '█';
-    animation: blink 1.2s step-end infinite;
-    color: var(--accent);
-  }
-
-  /* Message bubble */
-  .msg-user {
-    background: rgba(0,212,255,0.06);
-    border: 1px solid rgba(0,212,255,0.15);
-    border-left: 3px solid var(--accent);
-  }
-
-  .msg-ai {
-    background: rgba(0,255,136,0.04);
-    border: 1px solid rgba(0,255,136,0.12);
-    border-left: 3px solid var(--green);
-  }
-
-  .msg-error {
-    background: rgba(255,68,102,0.06);
-    border: 1px solid rgba(255,68,102,0.15);
-    border-left: 3px solid var(--red);
-  }
-
-  /* Metric card */
-  .metric-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    padding: 16px;
-    transition: border-color 0.2s;
-  }
-
-  .metric-card:hover {
-    border-color: var(--muted);
-  }
-
-  /* Noise texture overlay */
-  .noise::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    opacity: 0.3;
-  }
-}
-
-@layer utilities {
-  .text-accent { color: var(--accent); }
-  .text-green { color: var(--green); }
-  .text-amber { color: var(--amber); }
-  .text-red-t { color: var(--red); }
-  .text-dim { color: var(--dim); }
-  .text-muted { color: var(--muted); }
-  .text-terminal { color: var(--text); }
-  .border-terminal { border-color: var(--border); }
-  .bg-surface { background: var(--surface); }
-  .bg-panel { background: var(--panel); }
-  .bg-terminal-bg { background: var(--bg); }
 }

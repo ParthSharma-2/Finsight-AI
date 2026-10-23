@@ -1,59 +1,37 @@
-export default function MetricCard({ label, value, change, changePct, sub, accent = false, loading = false }) {
+export default function MetricCard({ label, value, change, changePct, sub, accent = false }) {
   const isPositive = change > 0 || (typeof change === 'string' && change.startsWith('+'));
   const isNegative = change < 0 || (typeof change === 'string' && change.startsWith('-'));
 
-  const changeColor = isPositive ? 'var(--green)' : isNegative ? 'var(--red)' : 'var(--dim)';
-  const changePrefix = isPositive ? '▲' : isNegative ? '▼' : '—';
-
-  if (loading) {
-    return (
-      <div className="metric-card">
-        <div className="skeleton h-3 w-20 mb-3 rounded" />
-        <div className="skeleton h-7 w-28 mb-2 rounded" />
-        <div className="skeleton h-3 w-16 rounded" />
-      </div>
-    );
-  }
-
   return (
-    <div className="metric-card group cursor-default">
-      {/* Label */}
-      <div className="mono text-[10px] tracking-widest text-dim uppercase mb-2">
+    <div className="fin-card p-4 sm:p-5 flex flex-col justify-between">
+      <div className="text-[11px] font-mono font-medium text-zinc-500 dark:text-zinc-400 tracking-wider uppercase mb-2">
         {label}
       </div>
 
-      {/* Value */}
-      <div
-        className="font-display text-xl font-600 mb-1.5 transition-all duration-200"
-        style={{ color: accent ? 'var(--accent)' : 'var(--text)' }}
-      >
+      <div className={`text-2xl font-bold font-mono tracking-tight ${
+        accent ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-900 dark:text-zinc-100'
+      }`}>
         {value}
       </div>
 
-      {/* Change */}
-      {(change !== undefined || changePct !== undefined) && (
-        <div className="flex items-center gap-2">
-          <span className="mono text-[11px] font-500" style={{ color: changeColor }}>
-            {changePrefix} {change}
-          </span>
-          {changePct && (
-            <span className="mono text-[10px]" style={{ color: changeColor }}>
-              ({changePct})
+      {(change !== undefined || changePct !== undefined || sub) && (
+        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-800/80 text-xs font-mono">
+          {(change !== undefined || changePct !== undefined) && (
+            <span
+              className={`font-semibold flex items-center gap-0.5 ${
+                isPositive
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : isNegative
+                  ? 'text-rose-600 dark:text-rose-400'
+                  : 'text-zinc-500'
+              }`}
+            >
+              {isPositive ? '▲' : isNegative ? '▼' : '•'} {change} {changePct && `(${changePct})`}
             </span>
           )}
+          {sub && <span className="text-zinc-400 dark:text-zinc-500 text-[11px] ml-auto">{sub}</span>}
         </div>
       )}
-
-      {/* Sub label */}
-      {sub && (
-        <div className="mono text-[10px] text-muted mt-1">{sub}</div>
-      )}
-
-      {/* Hover accent line */}
-      <div
-        className="absolute bottom-0 left-0 h-px w-0 group-hover:w-full transition-all duration-300"
-        style={{ background: 'var(--accent)', opacity: 0.4 }}
-      />
     </div>
   );
 }
