@@ -31,7 +31,7 @@ load_dotenv()
 def create_agent():
 
     llm = ChatGroq(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
         temperature=0.1
     )
 
@@ -110,10 +110,13 @@ def run_agent(question: str) -> dict:
                 content=f"""
 You are FinSight, an expert financial AI assistant.
 
-You can use tools:
-- Use document search for annual report questions
-- Use stock tools for market data
-- Use SQL tools for structured queries
+You have access to specialized tools:
+- Use search_uploaded_documents for questions about financial filings, 10-K, 10-Q, annual reports, or uploaded documents.
+- Use stock tools (get_stock_price, get_stock_history, compare_stocks) for market data and price metrics.
+- Use news tools (get_company_news, get_analyst_recommendations) for company headlines and analyst ratings.
+- Use SQL tools (query_financial_database, get_revenue_breakdown) for structured queries and revenue breakdowns.
+
+Always provide accurate, grounded answers and cite sources whenever available.
 
 Previous conversation:
 {context}

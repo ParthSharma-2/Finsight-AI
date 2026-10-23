@@ -55,7 +55,17 @@ def load_vectorstore():
 
 def ingest_document(file_path: str):
     documents = load_pdf(file_path)
+    if not documents:
+        raise ValueError("The uploaded PDF could not be read or contains no pages.")
+    
+    total_text = "".join(doc.page_content.strip() for doc in documents)
+    if len(total_text) < 20:
+        raise ValueError("No extractable text found in the PDF. Please upload a document with digital text rather than scanned images.")
+        
     chunks = split_documents(documents)
+    if not chunks:
+        raise ValueError("Document could not be split into text segments.")
+
     vectorstore = create_vectorstore(chunks)
     return vectorstore
 
