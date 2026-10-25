@@ -213,6 +213,12 @@ Running this on AWS with free-tier eligibility:
 
 **Parth Sharma**
 
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/parth-sharma-work/)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/ParthSharma-2)
+
+- **LinkedIn:** [linkedin.com/in/parth-sharma-work](https://www.linkedin.com/in/parth-sharma-work/)
+- **GitHub:** [github.com/ParthSharma-2](https://github.com/ParthSharma-2)
+
 Built as a portfolio project demonstrating end-to-end ML system design: multi-agent LLM orchestration, RAG pipelines, financial data engineering, REST API development, and cloud deployment on AWS.
 
 ---

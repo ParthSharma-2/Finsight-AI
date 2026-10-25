@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Github, Linkedin, ExternalLink } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -60,9 +61,42 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="pt-6 border-t border-zinc-100 dark:border-zinc-900 flex flex-col sm:flex-row items-center justify-between text-[11px] text-zinc-400 dark:text-zinc-500">
-          <div>© {new Date().getFullYear()} FinSight AI. Institutional Market Intelligence.</div>
-          <div className="mt-2 sm:mt-0">Not financial or investment advice. For institutional analysis and demonstration.</div>
+        {/* Bottom Credits & Author */}
+        <div className="pt-6 border-t border-zinc-100 dark:border-zinc-900 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <span>
+              Built by{' '}
+              <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                Parth Sharma
+              </span>
+            </span>
+            <span className="text-zinc-300 dark:text-zinc-700">•</span>
+            <a
+              href="https://www.linkedin.com/in/parth-sharma-work/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium"
+            >
+              <Linkedin className="w-3.5 h-3.5 text-[#0A66C2]" />
+              <span>LinkedIn</span>
+              <ExternalLink className="w-3 h-3 opacity-60" />
+            </a>
+            <span className="text-zinc-300 dark:text-zinc-700">•</span>
+            <a
+              href="https://github.com/ParthSharma-2"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium"
+            >
+              <Github className="w-3.5 h-3.5" />
+              <span>GitHub</span>
+              <ExternalLink className="w-3 h-3 opacity-60" />
+            </a>
+          </div>
+
+          <div className="text-[11px] text-zinc-400 dark:text-zinc-500">
+            © {new Date().getFullYear()} FinSight AI • Portfolio Project
+          </div>
         </div>
       </div>
     </footer>
