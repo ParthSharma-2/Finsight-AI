@@ -1,215 +1,253 @@
 # FinSight AI 🧠📈
 
-> **A multi-agent financial intelligence platform powered by LangGraph, Groq LLM, and RAG — deployed on AWS EC2.**
+> **An institutional-grade multi-agent financial intelligence and equity research platform powered by LangGraph, Groq LLM, and RAG — deployed in production on AWS EC2 & Vercel.**
 
+[![Live Web App](https://img.shields.io/badge/Live_App-finsightai.space-00C7B7?style=flat-square&logo=vercel)](https://finsightai.space)
+[![Live API](https://img.shields.io/badge/Live_API-api.finsightai.space-FF9900?style=flat-square&logo=amazonaws)](https://api.finsightai.space)
+[![RAGAS Benchmark](https://img.shields.io/badge/RAGAS_Benchmark-98.6%25_Score-brightgreen?style=flat-square)](evals/RAGAS_BENCHMARK_REPORT.md)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/React-Vite-61DAFB?style=flat-square&logo=react)](https://vitejs.dev/)
-[![LangGraph](https://img.shields.io/badge/LangGraph-multi--agent-FF6B35?style=flat-square)](https://github.com/langchain-ai/langgraph)
-[![Groq](https://img.shields.io/badge/Groq-llama3--70b-F55036?style=flat-square)](https://groq.com/)
-[![AWS EC2](https://img.shields.io/badge/AWS-EC2%20t3.micro-FF9900?style=flat-square&logo=amazonaws)](https://aws.amazon.com/ec2/)
-[![ChromaDB](https://img.shields.io/badge/ChromaDB-RAG-8B5CF6?style=flat-square)](https://www.trychroma.com/)
+[![React](https://img.shields.io/badge/React_18-Vite_Tailwind-61DAFB?style=flat-square&logo=react)](https://vitejs.dev/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-Multi--Agent-FF6B35?style=flat-square)](https://github.com/langchain-ai/langgraph)
+[![Groq](https://img.shields.io/badge/Groq-GPT--OSS_120B-F55036?style=flat-square)](https://groq.com/)
+[![AWS EC2](https://img.shields.io/badge/AWS-EC2_Ubuntu_24.04-FF9900?style=flat-square&logo=amazonaws)](https://aws.amazon.com/ec2/)
+[![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector_Store-8B5CF6?style=flat-square)](https://www.trychroma.com/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+
+---
+
+## 🌐 Live Deployments
+
+- **Frontend Application:** [https://finsightai.space](https://finsightai.space) (Vercel Edge Network)
+- **Production API Backend:** [https://api.finsightai.space](https://api.finsightai.space) (AWS EC2 • Nginx Reverse Proxy • SSL)
+- **API Health Check:** [https://api.finsightai.space/health](https://api.finsightai.space/health)
 
 ---
 
 ## What is FinSight AI?
 
-FinSight AI is a conversational financial research assistant that combines the reasoning power of large language models with real-time market data and document-level retrieval. Ask it about stock prices, compare companies, or query your own financial research documents — all through a single chat interface.
+FinSight AI is a comprehensive financial intelligence and equity research platform designed to bring institutional-grade analysis to retail investors and analysts. It unifies high-speed market data, multi-perspective LLM reasoning, and document-level retrieval (RAG) over corporate filings.
 
-The system uses a **LangGraph multi-agent orchestration layer** to route user queries to the right tool automatically: live stock data via yFinance, vector search over uploaded PDFs via ChromaDB, or direct LLM reasoning via the Groq API.
+Rather than relying on a single monolithic prompt, FinSight AI utilizes a **LangGraph multi-agent orchestration architecture**: queries are routed across specialized agents (Market Analyst, Valuation Specialist, Risk Assessor, and Synthesis Agent) equipped with dedicated financial tools:
+- **Live Market Data:** Real-time quotes, batch tickers, and historical OHLCV curves via `yfinance` with in-memory TTL caching.
+- **RAG Filing Search:** Semantic retrieval over 10-Ks, annual reports, and earnings filings using ChromaDB and BGE embeddings.
+- **Quantitative Database:** Direct SQL queries over financial statements and fundamental metrics.
+- **LLM Reasoning:** Ultra-low latency synthesis powered by Groq's `openai/gpt-oss-120b` (131K context window).
 
 ---
 
-## Architecture
+## 🏛️ System Architecture
 
 ```
-Browser (User)
-    ↓
-React + Vite Frontend        ← api.js handles all HTTP calls
-    ↓  POST /chat, GET /market/*, POST /research/*
-FastAPI Backend (main.py)    ← Receives, validates, dispatches
-    ↓
-LangGraph Agent (graph.py)   ← Routes to correct tool based on intent
-    ├── Groq LLM             ← llama3-70b-8192 reasoning
-    ├── yFinance Tools       ← Live price, history, stock comparison
-    ├── ChromaDB RAG         ← PDF document retrieval + vector search
-    └── SQL / Data Tools     ← Structured query over datasets
-    ↓
-JSON Response → Frontend renders chat reply, stock cards, charts
+User (Browser)
+   │
+   ├── [Vercel Edge] ──> React 18 + Tailwind Institutional Workspace
+   │                     ├── Dark Zinc (#09090b) / Light Slate Theme Toggle (300ms easing)
+   │                     ├── Global AI Copilot Drawer (Cmd/Ctrl + K)
+   │                     └── Interactive Financial Terminal & Dynamic Watchlist
+   │
+   └── [AWS EC2] ──────> Nginx Reverse Proxy (SSL Let's Encrypt)
+                            │
+                            ▼
+                         FastAPI Backend (Uvicorn / systemd service)
+                            │
+                            ▼
+                   LangGraph Multi-Agent Orchestrator
+           ┌────────────────────────┼────────────────────────┐
+           ▼                        ▼                        ▼
+     Market Analyst        Valuation Specialist        Risk Assessor
+           │                        │                        │
+     yFinance Tools        Financial SQL DB           ChromaDB RAG
+   (Quotes / History)     (Fundamental Metrics)   (PDF Filings Search)
+           └────────────────────────┬────────────────────────┘
+                                    │
+                                    ▼
+                             Synthesis Agent
+                       (Groq openai/gpt-oss-120b)
+                                    │
+                                    ▼
+                         Final Research Report
 ```
 
-Deployed on **AWS EC2 (Ubuntu 24.04 LTS, t3.micro, ap-south-1)** with Nginx as the reverse proxy and Let's Encrypt for SSL.
+---
+
+## 📊 RAGAS Evaluation Benchmark
+
+The RAG retrieval and synthesis pipeline was rigorously evaluated using the **RAGAS (Retrieval-Augmented Generation Assessment)** framework against ground-truth corporate filings (including Infosys FY24 Annual Report and Ujjivan SFB filings).
+
+👉 **[Read the Full RAGAS Evaluation Report (Scorecard & Methodology)](evals/RAGAS_BENCHMARK_REPORT.md)**
+
+### Benchmark Scorecard
+
+| Metric | Score | Target | Production Assessment |
+| :--- | :---: | :---: | :--- |
+| **Faithfulness** | **100.00%** | >85.0% | **Zero Hallucinations** (Strictly grounded in cited context) |
+| **Answer Relevancy** | **94.55%** | >85.0% | **High Precision** (Directly addresses user inquiries without fluff) |
+| **Context Precision** | **100.00%** | >80.0% | **Exact Grounding** (Pinpoint statement & page-level citations) |
+| **Context Recall** | **100.00%** | >80.0% | **Complete** (All key metrics & currency amounts captured) |
+| **Composite RAGAS Score** | **98.58%** | >80.0% | **Production Grade** |
+| **Average Query Latency** | **1.18s** | <3.0s | Sub-second to 1.6s end-to-end response times |
+
+### Run the Benchmark Yourself
+
+```bash
+# Run against the live production backend
+python evals/ragas_benchmark.py
+
+# Or run against your local development server
+FINSIGHT_API_URL="http://localhost:8000/api" python evals/ragas_benchmark.py
+```
 
 ---
 
-## Features
+## ⚡ Key Features
 
-| Feature | Description | Status |
-|---|---|---|
-| **Multi-agent orchestration** | LangGraph routes queries to the right tool automatically | ✅ Complete |
-| **Real-time stock data** | Live price, daily change %, volume, P/E, EPS, 52-week range | ✅ Complete |
-| **Stock history & comparison** | OHLCV history for any period; side-by-side multi-stock comparison | ✅ Complete |
-| **RAG over financial documents** | Upload PDFs; ChromaDB embeds and retrieves relevant chunks | ✅ Complete |
-| **Groq LLM reasoning** | llama3-70b-8192 for fast, accurate financial Q&A | ✅ Complete |
-| **REST API** | Full FastAPI backend with typed endpoints | ✅ Complete |
-| **React frontend** | Chat UI with stock cards and chart rendering | ✅ Complete |
-| **AWS EC2 deployment** | Ubuntu 24.04, t3.micro, 20GB gp3 EBS | ✅ Live |
-| **Nginx reverse proxy** | Routes `/` → React, `/api/*` → FastAPI | 🔄 In progress |
-| **HTTPS / SSL** | Let's Encrypt via Certbot | 🔄 Planned |
-| **Systemd auto-restart** | Backend survives reboots and crashes | 🔄 Planned |
+| Capability | Technical Implementation | Status |
+|---|---|:---:|
+| **Multi-Agent Orchestration** | LangGraph state graph routing across 4 specialized agents | ✅ Complete |
+| **Live Market Quotes & Charts** | `yfinance` with in-memory TTL caching (US & Indian NSE `.NS` tickers) | ✅ Complete |
+| **RAG over Financial Filings** | ChromaDB + `BAAI/bge-small-en-v1.5` embeddings with source page citations | ✅ Complete |
+| **Anti-Hallucination Guard** | Fallback validation rejecting out-of-scope queries; empty PDF upload guard | ✅ Complete |
+| **Institutional UI/UX** | Dark Zinc (`#09090b`) / Light Slate theme toggle with smooth 300ms easing | ✅ Complete |
+| **AI Copilot Drawer** | Persistent slide-out intelligence panel with global `Cmd/Ctrl + K` shortcut | ✅ Complete |
+| **Dynamic Terminal Watchlist** | Live multi-ticker quotes with real-time add/remove ticker support | ✅ Complete |
+| **AWS EC2 Production Server** | Ubuntu 24.04 LTS, Nginx reverse proxy, systemd auto-restart, Let's Encrypt SSL | ✅ Live |
+| **Vercel Edge Frontend** | Production CDN deployment with automatic CI/CD builds | ✅ Live |
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-- **Backend**: FastAPI + Uvicorn (Python)
-- **Frontend**: React + Vite (TypeScript)
-- **Agent Orchestration**: LangGraph (multi-agent graph with tool routing)
-- **LLM Provider**: Groq API — `llama3-70b-8192` / `mixtral-8x7b`
-- **Financial Data**: yFinance (NSE & US markets)
-- **Vector Store**: ChromaDB (document embedding + semantic search)
-- **Cloud**: AWS EC2 — `t3.micro`, Ubuntu 24.04 LTS, ap-south-1 (Mumbai)
-- **Proxy**: Nginx (static serving + API reverse proxy)
-- **SSL**: Let's Encrypt via Certbot
+- **Frontend**: React 18, Vite, Tailwind CSS, Lucide Icons, Recharts
+- **Backend**: FastAPI, Uvicorn, Python 3.11
+- **Agent Orchestration**: LangGraph, LangChain Core
+- **LLM Provider**: Groq Cloud API — `openai/gpt-oss-120b` (131K context)
+- **Vector Database**: ChromaDB (persistent vector store)
+- **Embedding Model**: `BAAI/bge-small-en-v1.5` / HuggingFace Transformers
+- **Financial APIs**: `yfinance` (NSE `.NS` & US equity markets)
+- **Evaluation**: RAGAS Benchmark Suite (Faithfulness, Relevancy, Precision, Recall)
+- **Cloud Infrastructure**: AWS EC2 (t3.micro, ap-south-1), Vercel Edge, Let's Encrypt SSL, Nginx
 
 ---
 
-## API Endpoints
+## 🔌 API Reference
+
+### Core Endpoints
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/` | Health check |
-| `POST` | `/chat` | Send a message to the LangGraph agent |
-| `GET` | `/market/quote?symbol=INFY.NS` | Live stock quote |
-| `GET` | `/market/chart?symbol=TCS.NS&period=1mo` | OHLCV chart data |
-| `GET` | `/market/search?q=apple` | Ticker symbol search |
-| `POST` | `/research/query` | RAG query over uploaded documents |
-| `POST` | `/research/upload` | Upload a PDF for embedding |
+| `GET` | `/health` | Server status and health check |
+| `POST` | `/chat` | Conversational query to the LangGraph agent |
+| `POST` | `/analyze` | Multi-agent equity research synthesis |
+| `GET` | `/market/quote?symbol=INFY.NS` | Real-time quote (price, change, volume, P/E) |
+| `GET` | `/market/quotes?symbols=AAPL,MSFT,NVDA` | Batch real-time quotes for watchlists |
+| `GET` | `/market/chart?symbol=TCS.NS&period=1mo` | OHLCV historical candlestick/line data |
+| `GET` | `/market/search?query=apple` | Company and ticker search |
+| `POST` | `/research/query` | Dedicated RAG query over uploaded financial filings |
+| `POST` | `/research/upload` | Upload PDF annual reports / 10-Ks for chunking & embedding |
 
-**Indian stocks**: append `.NS` (e.g. `INFY.NS`, `TCS.NS`, `WIPRO.NS`)
-**US stocks**: plain ticker (e.g. `MSFT`, `GOOGL`, `AAPL`)
+> **Ticker Conventions:**  
+> - **Indian NSE Stocks:** Append `.NS` (e.g. `INFY.NS`, `TCS.NS`, `RELIANCE.NS`)  
+> - **US Equities:** Standard ticker symbol (e.g. `AAPL`, `NVDA`, `MSFT`)
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
 - Python 3.11+
-- Node.js 22 LTS
-- A [Groq API key](https://console.groq.com/) (free tier available)
+- Node.js 20+
+- A [Groq API Key](https://console.groq.com/) (Free tier available)
 
 ### Local Development
 
-```bash
-# Clone the repo
-git clone https://github.com/ParthSharma-2/FinSight-AI.git
-cd FinSight-AI
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/ParthSharma-2/FinSight-AI.git
+   cd FinSight-AI
+   ```
 
-# Backend
-cd backend
-python3 -m venv venv
-source venv/bin/activate          # Windows: venv\Scripts\activate
-pip install -r requirements.txt
+2. **Backend Setup:**
+   ```bash
+   cd backend
+   python -m venv venv
+   source venv/bin/activate       # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
 
-# Set environment variables
-cp .env.example .env
-# Add your GROQ_API_KEY to .env
+   # Configure environment variables
+   cp .env.example .env
+   # Add your GROQ_API_KEY to .env
 
-# Start the backend
-uvicorn main:app --reload --port 8000
+   # Run FastAPI server
+   uvicorn app:app --reload --port 8000
+   ```
 
-# Frontend (new terminal)
-cd ../frontend
-npm install
-npm run dev
-```
+3. **Frontend Setup (in a new terminal):**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
 
-Visit `http://localhost:5173` — the frontend is live and connected to the backend.
-
-### AWS EC2 Deployment
-
-See [`docs/AWS_DEPLOYMENT.md`](docs/AWS_DEPLOYMENT.md) for the full 8-phase deployment guide:
-
-1. EC2 provisioning (AMI, instance type, storage, security groups)
-2. SSH access + PEM key setup (Windows icacls fix included)
-3. Server setup (apt, Git, Python, Node.js)
-4. Backend deployment (venv, pip, uvicorn)
-5. Frontend build + Nginx static serving
-6. Nginx reverse proxy configuration
-7. Elastic IP + domain + HTTPS (Let's Encrypt)
-8. Production hardening + systemd auto-restart
+4. Open `http://localhost:5173` in your browser.
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
 ```
 FinSight-AI/
 ├── backend/
-│   ├── main.py          # FastAPI app — all endpoints
-│   ├── graph.py         # LangGraph agent + tool routing
-│   ├── market.py        # yFinance tools (@tool decorated)
-│   ├── rag.py           # ChromaDB ingestion + retrieval
-│   ├── requirements.txt
-│   └── .env.example
+│   ├── app.py                   # FastAPI application & route declarations
+│   ├── src/
+│   │   ├── agents/
+│   │   │   ├── graph.py         # LangGraph multi-agent workflow
+│   │   │   ├── state.py         # Agent state definitions
+│   │   │   └── memory.py        # Conversation memory buffer
+│   │   ├── rag/
+│   │   │   ├── ingestion.py     # Document chunking, validation & ChromaDB upsert
+│   │   │   ├── retriever.py     # Semantic search with BGE embeddings
+│   │   │   └── qa_chain.py      # Grounded Q&A prompt chain
+│   │   └── tools/
+│   │       ├── market_tools.py  # yFinance quote, history & compare tools
+│   │       ├── database_tool.py # SQLite fundamental financial query tool
+│   │       └── rag_tool.py      # search_uploaded_documents agent tool
+│   ├── data/
+│   │   ├── raw/                 # PDF filing storage
+│   │   └── processed/           # ChromaDB vector store & sqlite DB
+│   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── api.js       # Centralized API fetch wrapper
-│   │   ├── pages/       # Chat, Home, Research pages
-│   │   └── components/  # StockCard, ChatBubble, ChartView
+│   │   ├── components/          # Nav, Footer, CopilotDrawer, ChartPanel
+│   │   ├── context/             # ThemeContext (Dark/Light mode)
+│   │   ├── pages/               # Home, Markets, Research, Terminal
+│   │   └── lib/api.js           # API client routing to production/localhost
 │   ├── package.json
-│   └── vite.config.ts
-├── data/
-│   └── chroma/          # ChromaDB vector store (local)
-├── docs/
-│   └── AWS_DEPLOYMENT.md
+│   └── tailwind.config.js
+├── evals/
+│   ├── ragas_benchmark.py       # RAGAS evaluation runner
+│   ├── ragas_results.json       # Raw benchmark run outputs
+│   └── RAGAS_BENCHMARK_REPORT.md# Executive scorecard & qualitative report
+├── test_live_suite.py           # End-to-end integration test suite
 └── README.md
 ```
 
 ---
 
-## Financial Tools (market.py)
+## 🗺️ Roadmap & Milestones
 
-Three `@tool`-decorated functions, callable by the LangGraph agent:
-
-**`get_stock_price(ticker)`** — Returns live price, daily change %, volume, 52-week high/low, market cap, P/E ratio, EPS, and dividend yield.
-
-**`get_stock_history(ticker, period)`** — Returns start/end price, total return %, period high/low, and trading day count for any period (1d to 5y).
-
-**`compare_stocks(tickers)`** — Accepts a comma-separated list of tickers and returns a side-by-side table of price, 1-month return %, P/E ratio, and market cap.
-
----
-
-## AWS Cost Summary
-
-Running this on AWS with free-tier eligibility:
-
-| Resource | Monthly Cost |
-|---|---|
-| EC2 t3.micro (750 hrs/month) | **Free** (12 months) |
-| EBS 20GB gp3 | **Free** (30GB limit) |
-| Data transfer (first 100GB) | **Free** |
-| Elastic IP (when attached) | **Free** |
-| Let's Encrypt SSL | **Free** |
-| Groq API | **Free tier** |
-| Custom domain (optional) | ~$1/month |
-
----
-
-## Roadmap
-
-- [ ] Phase 3–8: Full production deployment on EC2
-- [x] RAGAS evaluation of the RAG pipeline (Score: 98.6% composite harmonic score across Faithfulness, Relevancy, Precision, and Recall)
-- [ ] CloudWatch monitoring + alerting
+- [x] Phase 1–8: Full production deployment on AWS EC2 (`api.finsightai.space`)
+- [x] Vercel Edge frontend deployment (`finsightai.space`)
+- [x] RAGAS evaluation of the RAG pipeline (Score: **98.6%** — see [evals/RAGAS_BENCHMARK_REPORT.md](evals/RAGAS_BENCHMARK_REPORT.md))
+- [x] Institutional Dark / Light workspace redesign with persistent AI Copilot
+- [x] Real-time market batch quotes & interactive chart integration via `yfinance`
 - [ ] Portfolio tracking with persistent user sessions
-- [ ] Earnings call transcript ingestion
-- [ ] Options chain data integration
-- [ ] Custom domain + HTTPS live URL
+- [ ] Earnings call transcript audio ingestion & speaker diarization
+- [ ] Options chain analytics & Greeks calculation
 
 ---
 
-## Author
+## 👨‍💻 Author
 
 **Parth Sharma**
 
@@ -219,8 +257,8 @@ Running this on AWS with free-tier eligibility:
 - **LinkedIn:** [linkedin.com/in/parth-sharma-work](https://www.linkedin.com/in/parth-sharma-work/)
 - **GitHub:** [github.com/ParthSharma-2](https://github.com/ParthSharma-2)
 
-Built as a portfolio project demonstrating end-to-end ML system design: multi-agent LLM orchestration, RAG pipelines, financial data engineering, REST API development, and cloud deployment on AWS.
+*Built as an end-to-end ML System Design & Financial AI project demonstrating multi-agent LLM orchestration, RAG pipelines, financial data engineering, and full-stack cloud deployment.*
 
 ---
 
-*FinSight AI is a portfolio project and does not constitute financial advice.*
+*FinSight AI is a portfolio and research project and does not constitute financial advice.*
