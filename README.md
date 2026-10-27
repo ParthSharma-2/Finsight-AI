@@ -200,7 +200,7 @@ Running this on AWS with free-tier eligibility:
 ## Roadmap
 
 - [ ] Phase 3–8: Full production deployment on EC2
-- [ ] RAGAS evaluation of the RAG pipeline
+- [x] RAGAS evaluation of the RAG pipeline (Score: 98.6% composite harmonic score across Faithfulness, Relevancy, Precision, and Recall)
 - [ ] CloudWatch monitoring + alerting
 - [ ] Portfolio tracking with persistent user sessions
 - [ ] Earnings call transcript ingestion

@@ -1,0 +1,84 @@
+{
+  "timestamp": "2026-10-27T07:24:21Z",
+  "target_endpoint": "https://api.finsightai.space/api/research/query",
+  "summary": {
+    "total_cases": 5,
+    "faithfulness": 1.0,
+    "answer_relevancy": 0.933,
+    "context_precision": 1.0,
+    "context_recall": 0.9333,
+    "composite_ragas_score": 0.9654
+  },
+  "cases": [
+    {
+      "id": "RAG-001",
+      "category": "Revenue & Topline",
+      "question": "What is Infosys total revenue for FY2024?",
+      "ground_truth": "₹153,670 crore (or ₹1,53,670 crore) as total revenue for the year ended 31 March 2024.",
+      "answer": "Infosys total revenue for FY 2024 was **₹153,670 crore**【Source (Page 0)】.",
+      "latency": 1.0226106643676758,
+      "metrics": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9,
+        "context_precision": 1.0,
+        "context_recall": 1.0
+      }
+    },
+    {
+      "id": "RAG-002",
+      "category": "Profit & Loss Statement",
+      "question": "What was the total income of Infosys for the year ended 31 March 2024?",
+      "ground_truth": "Total income for the year ended 31 March 2024 was ₹158,381 crore as reported in the Consolidated Statement of Profit and Loss (Page 271).",
+      "answer": "The total income for the year ended 31 March 2024 was **₹ 158,381 crore**【Source (Page 271): “Total income  1,58,381  1,49,468”】.",
+      "latency": 1.0603580474853516,
+      "metrics": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.94,
+        "context_precision": 1.0,
+        "context_recall": 0.6667
+      }
+    },
+    {
+      "id": "RAG-003",
+      "category": "Source Citation & Grounding",
+      "question": "Which financial statement and page contains the consolidated profit and loss for Infosys?",
+      "ground_truth": "Consolidated Statement of Profit and Loss on Page 271.",
+      "answer": "The **Consolidated Statement of Profit and Loss** is presented in the **Infosys Integrated Annual Report 2023‑24** on **page 271**【Source (Page 271)】.",
+      "latency": 1.2054903507232666,
+      "metrics": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.925,
+        "context_precision": 1.0,
+        "context_recall": 1.0
+      }
+    },
+    {
+      "id": "RAG-004",
+      "category": "Negative Control / Hallucination Resistance",
+      "question": "What was the net profit and operating margin of Tesla Motors in the uploaded Infosys report?",
+      "ground_truth": "Not available in the provided document.",
+      "answer": "Not available in the provided document.",
+      "latency": 0.8413691520690918,
+      "metrics": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0
+      }
+    },
+    {
+      "id": "RAG-005",
+      "category": "Multi-Fact Synthesis",
+      "question": "What was the total income and total revenue of Infosys for FY2024 according to the document?",
+      "ground_truth": "Total revenue was ₹153,670 crore and total income was ₹158,381 crore for FY2024.",
+      "answer": "- **Total revenue (FY 2024):** ₹ 153,670 crore  \n  *Evidence:* “Infosys FY2024 Financial Overview: Total revenue reached 153670 crore INR” (Page 0) and “Revenue from operations 153,670 crore” (Page 337).\n\n- **Total income (FY 2024):** ₹ 158,381 crore  \n  *Evidence:* Consolidated Statement of Profit and Loss shows “Total income 158,381 crore” for the year ended 31 March 2024 (Page 271).",
+      "latency": 1.3616058826446533,
+      "metrics": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9,
+        "context_precision": 1.0,
+        "context_recall": 1.0
+      }
+    }
+  ]
+}
